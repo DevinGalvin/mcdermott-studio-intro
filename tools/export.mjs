@@ -31,7 +31,7 @@ const browser = await puppeteer.launch({
 const page = await browser.newPage();
 page.on('console', (m) => { if (m.type() === 'error') console.error('[page]', m.text()); });
 page.on('pageerror', (e) => console.error('[page]', e.message));
-await page.goto(`http://127.0.0.1:${port}/?export&rs=${scale}`, { waitUntil: 'networkidle0' });
+await page.goto(`http://127.0.0.1:${port}/?export`, { waitUntil: 'networkidle0' });
 await page.waitForFunction('window.__film && window.__film.ready === true', { timeout: 60000 });
 const film = await page.evaluate(() => ({ duration: __film.duration, fps: __film.fps }));
 const duration = film.duration, fps = preview ? 30 : film.fps;

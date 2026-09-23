@@ -5,13 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>McDermott Studio</title>
 <script type="importmap">
-{
-  "imports": {
-    "three": "./vendor/three/build/three.module.js",
-    "three/addons/": "./vendor/three/addons/",
-    "gsap": "./vendor/gsap/index.js"
-  }
-}
+{ "imports": { "gsap": "./vendor/gsap/index.js" } }
 </script>
 <style>
   :root {
@@ -24,51 +18,86 @@
   html, body { margin: 0; height: 100%; background: var(--abyss); overflow: hidden; }
   body { display: flex; flex-direction: column; }
 
-  /* The stage is always 1920x1080 logical px and scaled to fit, so type sizes are frame-true. */
+  /* The stage is always 1920x1080 logical px, scaled to fit. */
   #frame { flex: 1; position: relative; min-height: 0; }
   #stage {
     position: absolute; left: 50%; top: 50%;
-    width: 1920px; height: 1080px;
-    transform-origin: 0 0;
-    background: var(--navy);
-    overflow: hidden;
-  }
-  #gl { position: absolute; inset: 0; width: 1920px; height: 1080px; display: block; }
-
-  /* Type layer: Georgia for display, Arial only for small tracked labels. No webfonts. */
-  #type { position: absolute; inset: 0; pointer-events: none; }
-  .line {
-    position: absolute; left: 0; right: 0;
-    text-align: center; color: var(--white);
-    font-family: Georgia, 'Times New Roman', serif;
-    font-weight: normal;
-    opacity: 0; white-space: nowrap;
-    will-change: opacity, filter, letter-spacing;
-  }
-  .line.copy  { top: 858px; font-size: 46px; letter-spacing: 0.01em; }
-  .line.title { top: 468px; font-size: 118px; letter-spacing: -0.005em; }
-  .line.sign  { top: 944px; font-size: 38px; }
-  .line.tool  { top: 816px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
-  .line.tool .label { font-size: 17px; letter-spacing: 0.32em; opacity: 0.85; }
-  .line.tool .tline { font-size: 44px; }
-  .label {
-    font-family: Arial, Helvetica, sans-serif; font-size: 15px;
-    letter-spacing: 0.32em; text-transform: uppercase; color: var(--white);
+    width: 1920px; height: 1080px; transform-origin: 0 0;
+    background: var(--navy); overflow: hidden;
   }
 
-  #lockup {
-    position: absolute; left: 50%; top: 540px;
-    width: 600px; transform: translate(-50%, -50%);
-    opacity: 0;
+  /* ── The document plane: identical contract pages ─────────────────────── */
+  .plane { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform, opacity, filter; }
+  .page {
+    position: absolute; width: 300px; height: 388px; box-sizing: border-box;
+    padding: 24px 24px 20px;
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    color: rgba(255, 255, 255, 0.46);
+    font: 9px/1.55 Georgia, 'Times New Roman', serif;
+    text-align: justify; hyphens: auto;
   }
-  #lockup img { display: block; width: 100%; height: auto; }
-  #lockup .missing {
-    height: 170px; border: 1px dashed rgba(0, 226, 193, 0.55);
+  .page .hd {
+    font: 6.5px/1 Arial, Helvetica, sans-serif; letter-spacing: 0.28em; text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.6); display: flex; justify-content: space-between;
+    padding-bottom: 8px; margin-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  }
+  .page h4 {
+    margin: 10px 0 4px; font: 6.5px/1 Arial, Helvetica, sans-serif; letter-spacing: 0.24em;
+    text-transform: uppercase; color: rgba(255, 255, 255, 0.62); font-weight: normal;
+  }
+  .page p { margin: 0 0 5px; }
+  .page p b { font-weight: normal; color: rgba(255, 255, 255, 0.62); margin-right: 4px; }
+  .page .ft {
+    position: absolute; left: 24px; right: 24px; bottom: 14px;
+    font: 6px/1 Arial, Helvetica, sans-serif; letter-spacing: 0.2em; color: rgba(255, 255, 255, 0.35);
+    display: flex; justify-content: space-between; text-transform: uppercase;
+  }
+
+  #scrim {
+    position: absolute; inset: 0; pointer-events: none; opacity: 0;
+    background: linear-gradient(180deg, rgba(0,0,66,0) 30%, rgba(0,0,50,0.92) 72%, rgba(0,0,50,0.97) 100%);
+  }
+  #vignette {
+    position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse at 50% 45%, rgba(0,0,15,0) 55%, rgba(0,0,15,0.55) 100%);
+  }
+
+  /* ── The line that gets redlined ──────────────────────────────────────── */
+  #edit {
+    position: absolute; left: 160px; top: 690px; right: 160px;
+    font: 80px/1.14 Georgia, 'Times New Roman', serif; color: var(--white);
+    letter-spacing: -0.005em;
+  }
+  #edit .row { position: relative; white-space: nowrap; }
+  #orig { position: relative; display: inline-block; }
+  #strike {
+    position: absolute; left: -4px; top: 52%; height: 4px; width: 0;
+    background: var(--teal);
+  }
+  #ins { color: var(--teal); text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 14px; }
+  #caret {
+    display: inline-block; width: 4px; height: 76px; margin-left: 6px;
+    background: var(--gold); vertical-align: -12px;
+  }
+
+  #title {
+    position: absolute; left: 0; right: 0; top: 430px; text-align: center;
+    font: 150px/1 Georgia, 'Times New Roman', serif; color: var(--white); opacity: 0;
+  }
+  #rule { position: absolute; left: 50%; top: 640px; width: 520px; height: 2px; margin-left: -260px; background: var(--gold); transform: scaleX(0); }
+
+  /* ── Player (never part of the frame) ─────────────────────────────────── */
+  #bigplay {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    background: rgba(0, 0, 15, 0.35); border: 0; cursor: pointer; padding: 0;
+  }
+  #bigplay span {
+    width: 150px; height: 150px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.85);
     display: flex; align-items: center; justify-content: center;
-    color: var(--teal); opacity: 0.8;
   }
-
-  /* Dev bar: never part of the frame, hidden in export. */
+  #bigplay svg { width: 52px; height: 52px; margin-left: 10px; fill: #fff; }
+  #bigplay:focus-visible span { outline: 3px solid var(--teal); outline-offset: 6px; }
   #dev {
     flex: none; height: 64px; box-sizing: border-box; padding: 10px 20px 12px;
     background: #03031a; border-top: 1px solid #12124a;
@@ -80,29 +109,18 @@
   #dev .beat { color: var(--teal); min-width: 190px; letter-spacing: 0.08em; }
   #dev .hint { margin-left: auto; opacity: 0.7; }
   #dev .fps  { font-variant-numeric: tabular-nums; min-width: 60px; text-align: right; }
-  #track { position: relative; height: 18px; cursor: pointer; }
-  #track .rail { position: absolute; left: 0; right: 0; top: 8px; height: 2px; background: #1a1a55; }
-  #track .fill { position: absolute; left: 0; top: 8px; height: 2px; background: var(--teal); }
-  #track .tick { position: absolute; top: 3px; width: 1px; height: 12px; background: #3a3f86; }
-  #track .tick span { position: absolute; top: -1px; left: 5px; font-size: 10px; color: #5c62a8; white-space: nowrap; }
-  #track .head { position: absolute; top: 2px; width: 2px; height: 14px; background: #fff; margin-left: -1px; }
-  #bigplay {
-    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-    background: rgba(0, 0, 15, 0.35); border: 0; cursor: pointer; padding: 0;
-  }
-  #bigplay span {
-    width: 150px; height: 150px; border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.85);
-    display: flex; align-items: center; justify-content: center;
-  }
-  #bigplay svg { width: 52px; height: 52px; margin-left: 10px; fill: #fff; }
-  #bigplay:focus-visible span { outline: 3px solid var(--teal); outline-offset: 6px; }
   #playbtn {
     flex: none; width: 34px; height: 24px; border: 1px solid #2a2f78; border-radius: 4px;
     background: transparent; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center;
   }
   #playbtn svg { width: 12px; height: 12px; fill: currentColor; }
   #playbtn:focus-visible { outline: 2px solid var(--teal); }
+  #track { position: relative; height: 18px; cursor: pointer; }
+  #track .rail { position: absolute; left: 0; right: 0; top: 8px; height: 2px; background: #1a1a55; }
+  #track .fill { position: absolute; left: 0; top: 8px; height: 2px; background: var(--teal); }
+  #track .tick { position: absolute; top: 3px; width: 1px; height: 12px; background: #3a3f86; }
+  #track .tick span { position: absolute; top: -1px; left: 5px; font-size: 10px; color: #5c62a8; white-space: nowrap; }
+  #track .head { position: absolute; top: 2px; width: 2px; height: 14px; background: #fff; margin-left: -1px; }
   @media (max-width: 720px) { #dev .hint, #track .tick span { display: none; } }
   body.export #dev, body.export #bigplay { display: none; }
   body.export #frame { position: fixed; inset: 0; }
@@ -112,20 +130,16 @@
 <body>
   <div id="frame">
     <div id="stage">
-      <canvas id="gl" width="1920" height="1080"></canvas>
-      <div id="type">
-        <div class="line copy" data-cue="b1">Most firms are buying the same tools.</div>
-        <div class="line copy" data-cue="b2a">We chose to build our own.</div>
-        <div class="line title" data-cue="b2b">McDermott Studio</div>
-        <div class="line tool" data-cue="t1"><span class="label">Bespoke</span><span class="tline">Built around the matter, not the market.</span></div>
-        <div class="line tool" data-cue="t2"><span class="label">Fitted</span><span class="tline">Works the way our teams already work.</span></div>
-        <div class="line tool" data-cue="t3"><span class="label">Supervised</span><span class="tline">Lawyers review what it produces.</span></div>
-        <div class="line tool" data-cue="t4"><span class="label">Adaptable</span><span class="tline">Changes as fast as the law does.</span></div>
-        <div class="line tool" data-cue="t5"><span class="label">Ours</span><span class="tline">We own it, so we can improve it tomorrow.</span></div>
-        <div class="line copy" data-cue="b4">Your information. Our walls.</div>
-        <div id="lockup"><img src="assets/lockup-teal-on-dark.png" alt="McDermott Studio"></div>
-        <div class="line sign" data-cue="b5">Built in-house. Built for law.</div>
+      <div class="plane" id="far"></div>
+      <div class="plane" id="near"></div>
+      <div id="scrim"></div>
+      <div id="vignette"></div>
+      <div id="edit">
+        <div class="row" id="row1"><span id="orig">Most firms are buying the same tools.<span id="strike"></span></span></div>
+        <div class="row" id="row2"><span id="ins"></span><span id="caret"></span></div>
       </div>
+      <div id="title">McDermott Studio</div>
+      <div id="rule"></div>
       <button id="bigplay" aria-label="Play film"><span><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg></span></button>
     </div>
   </div>
@@ -135,7 +149,7 @@
       <span class="time" id="t">0.00 s</span>
       <span class="beat" id="beat"></span>
       <span class="fps" id="fps"></span>
-      <span class="hint">Space replay · P pause · ← → 1 s · , . 1 frame · 1–5 beats · M sound</span>
+      <span class="hint">Space replay · P pause · ← → 1 s · , . 1 frame · 1–2 beats · M sound</span>
     </div>
     <div id="track"><div class="rail"></div><div class="fill"></div><div class="head"></div></div>
   </div>
