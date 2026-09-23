@@ -54,17 +54,18 @@ tools/                vendor, static server, Puppeteer export
 
 ## Beat map
 
-"The Document": a 2D typographic film made of legal text. One continuous piece, no cuts.
+"The Document": a kinetic-type film made of legal text. Hard cuts every 0.5–2.6 s, type set huge.
 
-| # | Beat | Time | What happens |
-|---|---|---|---|
-| 1 | The buy reflex | 0–9 s | Macro on a boilerplate clause; pull out to a wall of identical contract pages. 5 s "Most firms are buying the same tools." |
-| 2 | The turn | 9–17 s | Gold cursor; the line is redlined (teal strike, tracked insertion "We chose to build our own."); accept change; 14 s title + gold hairline |
-| 3 | The redline spreads | 17–33 s | The redline ripples across the whole wall; every identical page is rewritten for a different matter. The camera dives to five pages whose rewrite is a pillar. |
-| 4 | Inside the walls | 33–40 s | Pull back to the rewritten wall; teal border drawn around it, sealed in gold (35.85 s); a standard page stops dead at the border; 36.9 s "Your information. Our walls." |
-| 5 | Executed | 40–45 s | The pages fall away; the border becomes the lockup frame; 43 s "Built in-house. Built for law." |
+| Section | Time | What happens |
+|---|---|---|
+| Standard terms | 0–8.2 s | Six 0.55 s cuts of boilerplate phrases ("as-is", "no customization", "wherever located"…), then a slam pull-back to a wall of 128 identical pages. 4.5 s "Most firms are buying the same tools." |
+| The turn | 8.2–12.6 s | The clause, huge, struck through in teal. "We chose to" types; "build our own." slams in teal. |
+| Title | 12.6–16 s | "McDermott Studio" with a gold rule |
+| Built for each matter | 16–30.6 s | The redline rips across the wall. Five pillars, five compositions: Bespoke (matter names flip), Fitted (columns snap to a line), Supervised (gold sign-off stroke), Adaptable (version counter, word rewrites itself), Ours. |
+| Inside the walls | 30.6–38.2 s | The frame of the film becomes the wall, sealed in gold at 32.5 s; standard pages fly in and stop dead against it. 35 s "Your information. Our walls." |
+| The answer | 38.2–45 s | The wall shrinks to frame the lockup. 40.4 s "Built in-house. Built for law." |
 
-Sound cues: low pad 0–31 s · rise 31–35.85 s · low hit on the gold seal at 35.85 s · silence from 40 s.
+Sound cues: low pad 0–30.6 s · rise 30.6–32.5 s · low hit on the gold seal at 32.5 s · silence from 38.2 s.
 
 ## Status
 

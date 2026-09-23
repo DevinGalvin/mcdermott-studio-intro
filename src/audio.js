@@ -1,10 +1,10 @@
 // Placeholder sound layer. The timing hooks are final; the tones are not.
 // Real music later replaces buildGraph() but keeps CUES.
 export const CUES = {
-  pad:  { start: 0.0,  end: 31.0 },  // sustained low pad, beats 1–3
-  rise: { start: 31.0, end: 35.85 },  // rising element, beat 4, resolves on the seal
-  hit:  { at: 35.85 },                // single low hit on the seal
-  // 40–45: silence for the close
+  pad:  { start: 0.0,  end: 30.6 },  // sustained low pad, beats 1–3
+  rise: { start: 30.6, end: 32.5 },  // rising element, beat 4, resolves on the seal
+  hit:  { at: 32.5 },                // single low hit on the seal
+  // 38.2–45: silence for the close
 };
 
 // Schedules every cue on any BaseAudioContext. `origin` is the context time that maps to film t=0.

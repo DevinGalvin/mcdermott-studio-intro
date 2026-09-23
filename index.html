@@ -26,91 +26,54 @@
     background: var(--navy); overflow: hidden;
   }
 
-  /* ── The document plane: identical contract pages ─────────────────────── */
-  .plane { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform, opacity, filter; }
+  /* ── Shots: each is a full-frame layer, shown only during its cut ────────── */
+  #shots, .shot { position: absolute; inset: 0; }
+  .shot { overflow: hidden; display: none; }
+  .abs { position: absolute; }
+  .serif { font-family: Georgia, 'Times New Roman', serif; font-weight: normal; }
+  .sans  { font-family: Arial, Helvetica, sans-serif; text-transform: uppercase; }
+  .white { color: var(--white); }
+  .teal  { color: var(--teal); }
+  .gold  { color: var(--gold); }
+  .ghost { color: rgba(255, 255, 255, 0.16); }
+  .nowrap { white-space: nowrap; }
+  .w { display: inline-block; will-change: transform, opacity; }
+
+  /* Contract pages for the wall shots. */
+  .plane { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform; }
   .page {
-    position: absolute; width: 300px; height: 388px; box-sizing: border-box;
-    padding: 24px 24px 20px;
-    background: rgba(255, 255, 255, 0.035);
-    border: 1px solid rgba(255, 255, 255, 0.07);
-    color: rgba(255, 255, 255, 0.46);
-    font: 9px/1.55 Georgia, 'Times New Roman', serif;
-    text-align: justify; hyphens: auto;
+    position: absolute; width: 300px; height: 388px; box-sizing: border-box; padding: 24px 24px 20px; overflow: hidden;
+    background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.09);
+    color: rgba(255, 255, 255, 0.5); font: 9px/1.5 Georgia, 'Times New Roman', serif; text-align: justify;
   }
   .page .hd {
-    font: 6.5px/1 Arial, Helvetica, sans-serif; letter-spacing: 0.28em; text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.6); display: flex; justify-content: space-between;
-    padding-bottom: 8px; margin-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    font: 6.5px/1 Arial, Helvetica, sans-serif; letter-spacing: 0.28em; text-transform: uppercase; color: rgba(255,255,255,0.62);
+    display: flex; justify-content: space-between; padding-bottom: 8px; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.14);
   }
-  .page h4 {
-    margin: 10px 0 4px; font: 6.5px/1 Arial, Helvetica, sans-serif; letter-spacing: 0.24em;
-    text-transform: uppercase; color: rgba(255, 255, 255, 0.62); font-weight: normal;
-  }
+  .page h4 { margin: 10px 0 4px; font: 6.5px/1 Arial, Helvetica, sans-serif; letter-spacing: 0.24em; text-transform: uppercase; color: rgba(255,255,255,0.64); font-weight: normal; }
   .page p { margin: 0 0 5px; }
-  .page p b { font-weight: normal; color: rgba(255, 255, 255, 0.62); margin-right: 4px; }
-  .page .ft {
-    position: absolute; left: 24px; right: 24px; bottom: 14px;
-    font: 6px/1 Arial, Helvetica, sans-serif; letter-spacing: 0.2em; color: rgba(255, 255, 255, 0.35);
-    display: flex; justify-content: space-between; text-transform: uppercase;
-  }
+  .page b { font-weight: normal; color: rgba(255,255,255,0.64); margin-right: 4px; }
+  .page .fc { color: rgba(255, 255, 255, 0.95); text-decoration-line: line-through; text-decoration-thickness: 1px; text-decoration-color: rgba(0,226,193,0); }
+  .page .ins { display: none; margin-top: 3px; color: var(--teal); font-size: 10px; }
+  .page .mt { display: none; color: var(--teal); }
+  .page.rw { border-color: rgba(0, 226, 193, 0.35); }
+  .page.rw .fc { color: rgba(255,255,255,0.4); text-decoration-color: var(--teal); }
+  .page.rw .ins, .page.rw .mt { display: block; }
+  .page.rw .mt { display: inline; }
+  .page.rw .st { display: none; }
+  .page.gray { background: rgba(150, 155, 170, 0.22); border-color: rgba(200, 205, 215, 0.35); color: rgba(255,255,255,0.55); }
 
-  #scrim {
-    position: absolute; inset: 0; pointer-events: none; opacity: 0;
-    background: linear-gradient(180deg, rgba(0,0,66,0) 30%, rgba(0,0,50,0.92) 72%, rgba(0,0,50,0.97) 100%);
-  }
+  .bar { position: absolute; background: var(--teal); }
+  .bar.gold { background: var(--gold); }
   #vignette {
     position: absolute; inset: 0; pointer-events: none;
-    background: radial-gradient(ellipse at 50% 45%, rgba(0,0,15,0) 55%, rgba(0,0,15,0.55) 100%);
+    background: radial-gradient(ellipse at 50% 45%, rgba(0,0,15,0) 60%, rgba(0,0,15,0.5) 100%);
   }
-
-  /* ── The line that gets redlined ──────────────────────────────────────── */
-  #edit {
-    position: absolute; left: 160px; top: 690px; right: 160px;
-    font: 80px/1.14 Georgia, 'Times New Roman', serif; color: var(--white);
-    letter-spacing: -0.005em;
-  }
-  #edit .row { position: relative; white-space: nowrap; }
-  #orig { position: relative; display: inline-block; }
-  #strike {
-    position: absolute; left: -4px; top: 52%; height: 4px; width: 0;
-    background: var(--teal);
-  }
-  #ins { color: var(--teal); text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 14px; }
-  #caret {
-    display: inline-block; width: 4px; height: 76px; margin-left: 6px;
-    background: var(--gold); vertical-align: -12px;
-  }
-
-  #title {
-    position: absolute; left: 0; right: 0; top: 430px; text-align: center;
-    font: 150px/1 Georgia, 'Times New Roman', serif; color: var(--white); opacity: 0;
-  }
-  #rule { position: absolute; left: 50%; top: 640px; width: 520px; height: 2px; margin-left: -260px; background: var(--gold); transform: scaleX(0); }
-
-
-  /* ── The redline spreads (beat 3) ─────────────────────────────────────── */
-  .page .fc { text-decoration-line: line-through; text-decoration-thickness: 1px; text-decoration-color: rgba(0, 226, 193, 0); }
-  .page .ins { display: none; margin-top: 3px; color: var(--teal); font-size: 10px; line-height: 1.4; }
-  .page .mt { display: none; color: var(--teal); }
-  .page .ins.pillar { font-size: 12.5px; line-height: 1.3; color: #fff; margin-top: 6px; }
-  .page .ins .pl { display: block; margin-bottom: 4px; font: 5.5px/1 Arial, Helvetica, sans-serif; letter-spacing: 0.3em; text-transform: uppercase; color: var(--teal); }
-
-  /* ── The wall, the intruder, the close ────────────────────────────────── */
-  .wall { position: absolute; background: var(--teal); }
-  .wall.gold { background: var(--gold); }
-  #intruder { transform-origin: 0 0; opacity: 0; }
-  .line4, .line5 {
-    position: absolute; left: 0; right: 0; text-align: center; color: var(--white); opacity: 0;
-    font-family: Georgia, 'Times New Roman', serif; white-space: nowrap;
-  }
-  .line4 { top: 872px; font-size: 64px; letter-spacing: -0.005em; }
-  .line5 { top: 818px; font-size: 40px; }
-  #lockup { position: absolute; left: 50%; top: 540px; width: 560px; transform: translate(-50%, -50%); opacity: 0; }
-  #lockup img { display: block; width: 100%; height: auto; }
   #lockup .missing {
-    height: 150px; border: 1px dashed rgba(0, 226, 193, 0.55); display: flex; align-items: center; justify-content: center;
+    width: 560px; height: 150px; border: 1px dashed rgba(0, 226, 193, 0.55); display: flex; align-items: center; justify-content: center;
     font: 13px/1 Arial, Helvetica, sans-serif; letter-spacing: 0.28em; text-transform: uppercase; color: var(--teal);
   }
+  #lockup img { display: block; width: 560px; height: auto; }
 
   /* ── Player (never part of the frame) ─────────────────────────────────── */
   #bigplay {
@@ -155,21 +118,8 @@
 <body>
   <div id="frame">
     <div id="stage">
-      <div class="plane" id="far"></div>
-      <div class="plane" id="near"></div>
-      <div id="scrim"></div>
+      <div id="shots"></div>
       <div id="vignette"></div>
-      <div id="edit">
-        <div class="row" id="row1"><span id="orig">Most firms are buying the same tools.<span id="strike"></span></span></div>
-        <div class="row" id="row2"><span id="ins"></span><span id="caret"></span></div>
-      </div>
-      <div id="title">McDermott Studio</div>
-      <div id="rule"></div>
-      <div id="walls"><div class="wall" id="w-t"></div><div class="wall" id="w-r"></div><div class="wall" id="w-b"></div><div class="wall" id="w-l"></div><div class="wall gold" id="w-g"></div></div>
-      <div class="page" id="intruder"></div>
-      <div class="line4" id="copy4">Your information. Our walls.</div>
-      <div id="lockup"><img src="assets/lockup-teal-on-dark.png" alt="McDermott Studio"></div>
-      <div class="line5" id="copy5">Built in-house. Built for law.</div>
       <button id="bigplay" aria-label="Play film"><span><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg></span></button>
     </div>
   </div>
@@ -179,7 +129,7 @@
       <span class="time" id="t">0.00 s</span>
       <span class="beat" id="beat"></span>
       <span class="fps" id="fps"></span>
-      <span class="hint">Space replay · P pause · ← → 1 s · , . 1 frame · 1–5 beats · M sound</span>
+      <span class="hint">Space replay · P pause · ← → 1 s · , . 1 frame · 1–6 sections · M sound</span>
     </div>
     <div id="track"><div class="rail"></div><div class="fill"></div><div class="head"></div></div>
   </div>
