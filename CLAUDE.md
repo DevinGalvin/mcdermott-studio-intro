@@ -79,7 +79,8 @@ Flag these in the README of the project so Marketing sees them.
 ## Direction updates from the reviewer (these override the brief above)
 
 - **Concept reset: "The Document."** 3D was rejected ("embarrassingly pedestrian"; the odd-one-out metaphor is too obvious). The film is now 2D typographic motion made of legal text: identical boilerplate pages → the line is redlined (teal strike, teal tracked insertion, gold cursor) → accept change → title. The three.js stack is retired (it lives in git history).
-- **Pace and type (latest):** "so boring, pace and UI." Cut every 0.5–2.6 s; type set 150–700 px, cropped; no card/hairline-label UI look. Each pillar gets its own composition. Overrides the brief's "long holds".
+- **Pace (latest, overrides the next line):** "can't even read it, it's so fast. Slower but more selective. More creative overall." Six moments, every line held ≥2.5 s. Creativity comes from ideas (title found in the fine print; clichés redlined into pillars; privilege stamp), not from cutting speed.
+- **Pace and type (superseded):** "so boring, pace and UI." Cut every 0.5–2.6 s; type set 150–700 px, cropped; no card/hairline-label UI look. Each pillar gets its own composition. Overrides the brief's "long holds".
 - **Back half: "the redline spreads."** Reviewer loved the opening wall of identical pages and found a single-page bullet-list back half "uncreative and boring." Keep scale and camera energy: the redline ripples across the wall, every page rewritten for a different matter; camera dives to five pillar pages; pull back to wall it in.
 
 - **Look:** product render (Apple hardware intro). Solid glass and brushed metal under a soft studio key, real shadows. No wireframes or neon lines; teal only as light from inside things; bloom is a whisper.

@@ -1,15 +1,14 @@
 import { gsap } from 'gsap';
 import { createPlayer, renderWav } from './audio.js';
 
-// "The Document." A 45-second kinetic-type film made of legal text.
-// Cut fast, set huge. One idea: every firm signs the same standard terms; we rewrite ours.
+// "The Document." A 45-second film made of legal text. Six moments, each held long enough to read.
 //
-//  0.0  Standard terms   rapid cuts of boilerplate phrases, then the wall of identical pages
-//  8.2  The turn         the clause is struck in teal; "We chose to build our own."
-// 12.6  Title
-// 16.0  Built for each   the redline rips across the wall; five pillars, five compositions
-// 30.6  Inside the walls the frame of the film becomes the wall; standard pages hit it
-// 38.2  The answer       the wall becomes the lockup frame
+//  0.0  Everyone signs the same terms   one clause, then the same clause on every page
+//  6.5  One stroke                      a teal line through all of it: we chose to build our own
+// 11.5  The name in the fine print      the title's letters are found inside the boilerplate
+// 17.0  Redlining standard terms        five industry clichés struck and rewritten: the pillars
+// 34.0  Privileged & confidential       stamped, walled in gold; a standard page stops dead
+// 40.3  The answer                      the wall becomes the lockup frame
 
 const W = 1920, H = 1080, FPS = 60, DURATION = 45;
 const params = new URLSearchParams(location.search);
@@ -17,12 +16,12 @@ const EXPORT = params.has('export');
 if (EXPORT) document.body.classList.add('export');
 
 export const BEATS = [
-  { id: 's1', name: 'Standard terms', start: 0 },
-  { id: 's2', name: 'The turn', start: 8.2 },
-  { id: 's3', name: 'Title', start: 12.6 },
-  { id: 's4', name: 'Built for each matter', start: 16.0 },
-  { id: 's5', name: 'Inside the walls', start: 30.6 },
-  { id: 's6', name: 'The answer', start: 38.2 },
+  { id: 's1', name: 'The same terms', start: 0 },
+  { id: 's2', name: 'One stroke', start: 6.5 },
+  { id: 's3', name: 'The name', start: 11.5 },
+  { id: 's4', name: 'Redlining standard terms', start: 17 },
+  { id: 's5', name: 'Privileged & confidential', start: 34 },
+  { id: 's6', name: 'The answer', start: 40.3 },
 ];
 
 const tl = gsap.timeline({ paused: true });
@@ -34,7 +33,9 @@ const shots = [], movers = [];
 function shot(start, end, build) {
   const el = document.createElement('div'); el.className = 'shot';
   shotsRoot.appendChild(el); shots.push({ start, end, el });
+  el.style.display = 'block'; // built visible so layout can be measured
   build(el, start, end);
+  el.style.display = 'none';
 }
 function add(parent, cls, html = '', css = '') {
   const d = document.createElement('div'); d.className = cls; d.innerHTML = html; d.style.cssText = css;
@@ -91,217 +92,155 @@ function boilerBand(parent, { top, size, speed, start, opacity = 0.1 }) {
   return b;
 }
 
-// ─── 0.0–3.3  Boilerplate, cut fast ────────────────────────────────────────────
-const PHRASES = [
-  { txt: '<i>as-is</i>',        size: 560, left: -40, top: 170, drift: -130 },
-  { txt: 'in the same form',    size: 230, left: 110, top: 600, drift: 150, rot: -2 },
-  { txt: 'no customization',    size: 250, left: 90, top: 300, drift: -170 },
-  { txt: 'wherever located',    size: 215, left: 240, top: 120, drift: 130 },
-  { txt: 'at any time',         size: 330, left: 60,  top: 520, drift: -150 },
-  { txt: 'Standard Terms',      size: 300, left: -20, top: 340, drift: 110 },
-];
-PHRASES.forEach((ph, k) => {
-  const a = 0.55 * k, b = a + 0.55;
-  shot(a, b, (el) => {
-    boilerBand(el, { top: 60, size: 40, speed: ph.drift * -0.8, start: a });
-    boilerBand(el, { top: 930, size: 40, speed: ph.drift * 0.6, start: a });
-    const tag = add(el, 'abs sans', `§ 1.${k + 1}`, `left:${ph.left < 100 ? 120 : ph.left}px;top:${ph.top - 34}px;font-size:18px;letter-spacing:0.3em;color:rgba(255,255,255,0.45)`);
-    const x = add(el, 'abs serif nowrap white', ph.txt, `left:${ph.left}px;top:${ph.top}px;font-size:${ph.size}px;line-height:1;letter-spacing:-0.02em`);
-    move(x, (t) => `translateX(${ph.drift * (t - a) / 0.55}px) rotate(${ph.rot ?? 0}deg) scale(${1 + 0.05 * (t - a) / 0.55})`);
-    move(tag, (t) => `translateX(${ph.drift * 0.6 * (t - a) / 0.55}px)`);
-  });
-});
-
-// ─── 3.3–8.2  The wall: everyone signs the same thing ─────────────────────────
-shot(3.3, 8.2, (el) => {
+// ─── 0.0–6.5  Everyone signs the same terms ───────────────────────────────────
+// Open on one clause, close enough to read. Pull back: it is on every page.
+shot(0, 11.5, (el) => {
   const wl = wall(el, 8, 16);
-  const cam = { s: 2.8, fx: wl.w / 2, fy: wl.h / 2 };
-  tl.set(cam, { s: 2.8 }, 0);
-  tl.to(cam, { s: 0.33, duration: 0.8, ease: 'expo.out' }, 3.3);
-  tl.to(cam, { s: 0.29, fx: wl.w / 2 + 300, duration: 4.1, ease: 'none' }, 4.1);
+  const k0 = 3 * 16 + 7, p0 = wl.pages[k0];
+  const clause = p0.el.querySelectorAll('p')[1];
+  const cam = { s: 5.2, fx: p0.el.offsetLeft + PW / 2, fy: p0.el.offsetTop + clause.offsetTop + clause.offsetHeight / 2 };
+  tl.set(cam, { s: 5.2 }, 0);
+  tl.to(cam, { s: 0.36, fx: wl.w / 2, fy: wl.h / 2 - 140, duration: 1.6, ease: 'expo.inOut' }, 1.9);
+  tl.to(cam, { s: 0.32, fx: wl.w / 2 + 120, duration: 9.5, ease: 'none' }, 3.5);
   move(wl.plane, () => view(wl.plane, cam));
-  add(el, 'abs', '', 'left:0;right:0;bottom:0;height:560px;background:linear-gradient(180deg,rgba(0,0,66,0),rgba(0,0,50,0.95) 60%)');
-  const line = add(el, 'abs serif white', words('Most firms are buying') + '<br>' + words('the same tools.'),
-    'left:120px;top:640px;font-size:150px;line-height:1.02;letter-spacing:-0.02em');
-  slam(line, 4.5, { stagger: 0.07 });
-});
+  tl.fromTo(wl.plane, { opacity: 0 }, { opacity: 1, duration: 0.5, immediateRender: false }, 0.1);
+  const scrim = add(el, 'abs', '', 'left:0;right:0;bottom:0;height:520px;background:linear-gradient(180deg,rgba(0,0,66,0),rgba(0,0,50,0.96) 55%)');
+  tl.set(scrim, { opacity: 0 }, 0);
+  tl.to(scrim, { opacity: 1, duration: 0.6 }, 3.2);
+  const l1 = add(el, 'abs serif white', words('Most firms are buying the same tools.'), 'left:0;right:0;top:800px;text-align:center;font-size:92px;letter-spacing:-0.015em');
+  slam(l1, 3.7, { stagger: 0.09, dur: 0.6, y: 30 });
+  tl.to(l1, { opacity: 0, duration: 0.5 }, 6.3);
 
-// ─── 8.2–9.9  The clause, struck ──────────────────────────────────────────────
-shot(8.2, 9.9, (el) => {
-  boilerBand(el, { top: 80, size: 34, speed: -90, start: 8.2, opacity: 0.08 });
-  add(el, 'abs sans', '§ 1.3', 'left:128px;top:236px;font-size:20px;letter-spacing:0.3em;color:rgba(255,255,255,0.5)');
-  const txt = add(el, 'abs serif white', 'The Services have not been<br>developed to meet your<br>individual requirements.',
-    'left:120px;top:280px;font-size:124px;line-height:1.12;letter-spacing:-0.015em');
-  move(txt, (t) => `scale(${1 + 0.03 * (t - 8.2)})`);
-  tl.fromTo(txt, { color: '#ffffff' }, { color: 'rgba(255,255,255,0.32)', duration: 0.3, immediateRender: false }, 9.05);
-  [0, 1, 2].forEach((k) => {
-    const bar = add(el, 'bar', '', `left:110px;top:${355 + k * 139}px;height:12px;width:${[1480, 1290, 1330][k]}px;transform-origin:0 50%`);
-    tl.set(bar, { scaleX: 0 }, 0);
-    tl.to(bar, { scaleX: 1, duration: 0.16, ease: 'power2.in' }, 8.95 + k * 0.12);
-  });
-});
-
-// ─── 9.9–12.6  We chose to build our own ──────────────────────────────────────
-shot(9.9, 12.6, (el) => {
-  const a = add(el, 'abs serif white nowrap', '', 'left:140px;top:300px;font-size:190px;line-height:1;letter-spacing:-0.025em');
-  const caret = add(el, 'abs', '', 'width:6px;height:170px;background:#E5AC2E;top:318px');
-  const b = add(el, 'abs serif teal nowrap', words('build our own.'), 'left:140px;top:520px;font-size:190px;line-height:1;letter-spacing:-0.025em');
-  slam(b, 10.85, { stagger: 0.09, dur: 0.35, y: 50 });
-  const TYPE = 'We chose to';
-  movers.push({ el: a, fn: (t) => { a.textContent = TYPE.slice(0, Math.round(clamp01((t - 10.05) / 0.5) * TYPE.length)); return ''; } });
-  movers.push({ el: caret, fn: (t) => {
-    const typed = t < 10.85;
-    caret.style.left = `${140 + (typed ? a.offsetWidth + 14 : b.offsetWidth + 14)}px`;
-    caret.style.top = `${typed ? 318 : 538}px`;
-    caret.style.opacity = (t < 10.6 || Math.floor(t * 2.4) % 2 === 0) ? 1 : 0;
-    return '';
-  } });
-});
-
-// ─── 12.6–16.0  Title ─────────────────────────────────────────────────────────
-shot(12.6, 16.0, (el) => {
-  const bg = wall(el, 8, 16);
-  bg.plane.style.opacity = 0.12;
-  const cam = { s: 0.42, fx: bg.w / 2, fy: bg.h / 2 };
-  move(bg.plane, (t) => view(bg.plane, { ...cam, s: 0.42 - 0.03 * (t - 12.6) }));
-  const title = add(el, 'abs serif white nowrap', 'McDermott Studio', 'left:0;right:0;top:390px;text-align:center;font-size:250px;line-height:1');
-  tl.fromTo(title, { opacity: 0, letterSpacing: '0.22em' }, { opacity: 1, letterSpacing: '-0.015em', duration: 0.9, ease: 'power4.out', immediateRender: false }, 12.6);
-  const rule = add(el, 'bar gold', '', 'left:560px;width:800px;top:700px;height:4px;transform-origin:50% 50%');
-  tl.set(rule, { scaleX: 0 }, 0);
-  tl.to(rule, { scaleX: 1, duration: 0.5, ease: 'power3.out' }, 13.3);
-});
-
-// ─── 16.0–17.6  The redline rips across the wall ──────────────────────────────
-shot(16.0, 17.6, (el) => {
-  const wl = wall(el, 8, 16);
-  const cam = { s: 0.3, fx: wl.w / 2, fy: wl.h / 2 };
-  tl.set(cam, { s: 0.3 }, 0);
-  tl.to(cam, { s: 0.5, duration: 1.6, ease: 'power2.in' }, 16.0);
-  move(wl.plane, () => view(wl.plane, cam));
-  const cr = 3.5, cc = 7.5;
+  // ─── 6.5–11.5  One stroke through all of it ─────────────────────────────────
+  const slice = add(el, 'bar', '', 'left:0;top:360px;height:10px;width:1920px;transform-origin:0 50%');
+  tl.set(slice, { scaleX: 0 }, 0);
+  tl.to(slice, { scaleX: 1, duration: 0.7, ease: 'power3.inOut' }, 6.8);
+  tl.to(slice, { opacity: 0, duration: 0.5 }, 8.0);
   wl.pages.forEach((p) => {
-    const at = 16.1 + Math.hypot(p.r - cr, (p.c - cc) * 0.6) * 0.16;
+    const at = 7.0 + (p.c / 16) * 0.6;
     movers.push({ el: p.el, fn: (t) => { p.el.classList.toggle('rw', t >= at); return ''; } });
   });
+  const l2 = add(el, 'abs serif white', words('We chose to') + '<span class="teal">' + words('build our own.') + '</span>',
+    'left:0;right:0;top:800px;text-align:center;font-size:104px;letter-spacing:-0.015em');
+  slam(l2, 8.1, { stagger: 0.12, dur: 0.6, y: 30 });
+  tl.to(l2, { opacity: 0, duration: 0.5 }, 10.9);
+  tl.to(wl.plane, { opacity: 0, duration: 0.6 }, 10.9);
 });
 
-// ─── 17.6–30.6  Five pillars, five compositions ───────────────────────────────
-const P = [17.6, 20.2, 22.8, 25.4, 28.0, 30.6];
-
-// Bespoke: the word slides in huge; the matter it is built for flips faster than you can read.
-shot(P[0], P[1], (el) => {
-  boilerBand(el, { top: 40, size: 34, speed: -120, start: P[0], opacity: 0.08 });
-  const word = add(el, 'abs serif teal nowrap', 'Bespoke', 'left:90px;top:520px;font-size:430px;line-height:1;letter-spacing:-0.03em');
-  tl.fromTo(word, { x: 420, opacity: 0 }, { x: 0, opacity: 1, duration: 0.55, ease: 'power4.out', immediateRender: false }, P[0]);
-  const line = add(el, 'abs serif white nowrap', words('Built around the matter in front of us.'), 'left:120px;top:250px;font-size:84px;letter-spacing:-0.01em');
-  slam(line, P[0] + 0.35, { stagger: 0.045 });
-  const tag = add(el, 'abs sans teal nowrap', '', 'left:124px;top:190px;font-size:22px;letter-spacing:0.3em');
-  movers.push({ el: tag, fn: (t) => { tag.textContent = 'For: ' + MATTERS[Math.floor((t - P[0]) * 9) % MATTERS.length]; return ''; } });
-});
-
-// Fitted: three columns of copy snap into alignment on a single line.
-shot(P[1], P[2], (el) => {
-  const word = add(el, 'abs serif white nowrap', 'Fitted', 'right:110px;top:90px;font-size:400px;line-height:1;letter-spacing:-0.03em;text-align:right');
-  tl.fromTo(word, { y: -120, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power4.out', immediateRender: false }, P[1]);
-  const cols = [0, 1, 2].map((k) => add(el, 'abs serif', BOILER.slice(k * 90, k * 90 + 260),
-    `left:${120 + k * 560}px;top:600px;width:500px;font-size:24px;line-height:1.5;color:rgba(255,255,255,0.28)`));
-  cols.forEach((c, k) => tl.fromTo(c, { y: [-90, 140, -40][k] }, { y: 0, duration: 0.6, ease: 'expo.inOut', immediateRender: false }, P[1] + 0.35));
-  const guide = add(el, 'bar', '', 'left:120px;top:588px;height:3px;width:1620px;transform-origin:0 50%');
-  tl.set(guide, { scaleX: 0 }, 0);
-  tl.to(guide, { scaleX: 1, duration: 0.4, ease: 'power3.out' }, P[1] + 0.8);
-  const line = add(el, 'abs serif teal nowrap', words('Shaped to the way our teams already work.'), 'left:120px;top:860px;font-size:76px');
-  slam(line, P[1] + 1.0, { stagger: 0.04 });
-});
-
-// Supervised: the line is signed off: a gold signature stroke draws beneath it.
-shot(P[2], P[3], (el) => {
-  const ghost = add(el, 'abs serif nowrap', 'Supervised', 'left:120px;top:300px;font-size:400px;line-height:1;letter-spacing:-0.03em;color:transparent;-webkit-text-stroke:2px rgba(0,226,193,0.4)');
-  move(ghost, (t) => `translateX(${-70 * (t - P[2])}px)`);
-  const line = add(el, 'abs serif white nowrap', words('Every output is reviewed by a lawyer.'), 'left:0;right:0;top:420px;text-align:center;font-size:104px;letter-spacing:-0.015em');
-  slam(line, P[2] + 0.15, { stagger: 0.05 });
-  const svg = add(el, 'abs', `<svg width="900" height="120" viewBox="0 0 900 120"><path d="M10 80 C 120 20, 180 110, 280 60 S 430 20, 470 70 S 600 100, 660 50 S 820 40, 890 62" fill="none" stroke="#E5AC2E" stroke-width="5" stroke-linecap="round"/></svg>`, 'left:510px;top:585px');
-  const path = svg.querySelector('path'), len = 1100;
-  path.style.strokeDasharray = len;
-  movers.push({ el: path, fn: (t) => { path.style.strokeDashoffset = len * (1 - easeOut((t - P[2] - 0.9) / 0.7)); return ''; } });
-  const sig = add(el, 'abs sans', 'Reviewed and approved', 'left:0;right:0;top:730px;text-align:center;font-size:20px;letter-spacing:0.34em;color:rgba(255,255,255,0.5)');
-  tl.fromTo(sig, { opacity: 0 }, { opacity: 1, duration: 0.3, immediateRender: false }, P[2] + 1.6);
-});
-
-// Adaptable: the version number races while the word rewrites itself.
-shot(P[3], P[4], (el) => {
-  const ver = add(el, 'abs sans teal nowrap', '', 'right:120px;top:120px;font-size:30px;letter-spacing:0.3em;text-align:right');
-  movers.push({ el: ver, fn: (t) => { ver.textContent = `Version ${1 + Math.floor(clamp01((t - P[3]) / 2.2) * 46)}`; return ''; } });
-  const word = add(el, 'abs serif white nowrap', '', 'left:110px;top:230px;font-size:400px;line-height:1;letter-spacing:-0.03em');
-  const FORMS = ['Revised', 'Amended', 'Updated', 'Adapted', 'Adaptable'];
-  movers.push({ el: word, fn: (t) => { word.textContent = FORMS[Math.min(FORMS.length - 1, Math.floor(Math.max(0, t - P[3]) / 0.22))]; return ''; } });
-  const line = add(el, 'abs serif teal nowrap', words('Amended as fast as the law moves.'), 'left:124px;top:720px;font-size:90px;letter-spacing:-0.01em');
-  slam(line, P[3] + 1.0, { stagger: 0.045 });
-});
-
-// Ours: one enormous word, a gold full stop.
-shot(P[4], P[5], (el) => {
-  const word = add(el, 'abs serif white nowrap', 'Ours<span class="gold">.</span>', 'left:80px;top:40px;font-size:720px;line-height:1;letter-spacing:-0.04em');
-  tl.fromTo(word, { scale: 1.12, opacity: 0, transformOrigin: '0% 50%' }, { scale: 1, opacity: 1, duration: 0.6, ease: 'power4.out', immediateRender: false }, P[4]);
-  const line = add(el, 'abs serif white nowrap', words('Owned by us, improved by us,') + '<span class="teal">' + words('accountable to you.') + '</span>',
-    'left:120px;top:860px;font-size:72px;letter-spacing:-0.01em');
-  slam(line, P[4] + 0.6, { stagger: 0.05 });
-});
-
-// ─── 30.6–38.2  The frame of the film becomes the wall ────────────────────────
-const FR = { x: 260, y: 150, w: 1400, h: 780 };        // the wall, in screen space
-const LOCK = { x: 580, y: 360, w: 760, h: 300 };      // where it ends, around the lockup
-const frame = { p: 0, k: 0 };
-shot(30.6, 45, (el) => {
-  const wl = wall(el, 8, 16);
-  wl.pages.forEach((p) => p.el.classList.add('rw'));
-  const cam = { s: 0.75, fx: wl.w / 2, fy: wl.h / 2 };
-  tl.set(cam, { s: 0.75 }, 0);
-  tl.to(cam, { s: 0.36, duration: 0.9, ease: 'expo.out' }, 30.6);
-  tl.to(cam, { s: 0.33, duration: 7, ease: 'none' }, 31.5);
-  move(wl.plane, () => view(wl.plane, cam));
-  // Outside the wall goes dark once it is sealed.
-  const outside = add(el, 'abs', '', `inset:0;background:rgba(0,0,40,0.9);clip-path:polygon(0 0,100% 0,100% 100%,0 100%,0 0,${FR.x}px ${FR.y}px,${FR.x}px ${FR.y + FR.h}px,${FR.x + FR.w}px ${FR.y + FR.h}px,${FR.x + FR.w}px ${FR.y}px,${FR.x}px ${FR.y}px)`);
-  tl.set(outside, { opacity: 0 }, 0);
-  tl.to(outside, { opacity: 1, duration: 0.3, ease: 'power2.out' }, 32.5);
-  // Standard pages arrive from outside and stop dead against it.
-  const HITS = [
-    { from: [2200, 360], to: [FR.x + FR.w + 6, 360] }, { from: [-500, 520], to: [FR.x - 6 - PW * 1.2, 520] },
-    { from: [900, -600], to: [900, FR.y - 6 - PH * 1.2] }, { from: [1250, 1300], to: [1250, FR.y + FR.h + 6] },
-    { from: [2200, 700], to: [FR.x + FR.w + 6, 700] },
-  ];
-  HITS.forEach((h, k) => {
-    const pg = add(el, 'page gray', pageHTML(k), `left:0;top:0;transform-origin:0 0`);
-    const o = { u: 0 }; const at = 33.0 + k * 0.17;
-    tl.set(o, { u: 0 }, 0);
-    tl.to(o, { u: 1, duration: 0.32, ease: 'none' }, at);
-    move(pg, () => `translate(${lerp(h.from[0], h.to[0], o.u)}px, ${lerp(h.from[1], h.to[1], o.u)}px) scale(1.2)`);
-    tl.to(pg, { opacity: 0, duration: 0.4 }, 38.2);
+// ─── 11.5–17  The name was in the fine print all along ─────────────────────────
+const TITLE = 'McDermott Studio';
+shot(11.5, 17, (el) => {
+  const para = add(el, 'abs serif', '', 'left:150px;top:150px;width:1620px;font-size:46px;line-height:1.6;text-align:justify;color:rgba(255,255,255,0.3)');
+  const src = ('Master Services Agreement. Standard Terms. ' + BOILER.repeat(2)).slice(0, 860);
+  // Find the title's letters in order inside the boilerplate.
+  const picks = []; let from = -3;
+  for (const ch of TITLE) {
+    if (ch === ' ') { picks.push(null); continue; }
+    let i = src.indexOf(ch, from + 3);
+    if (i < 0) i = src.toLowerCase().indexOf(ch.toLowerCase(), from + 1); // never fail on a letter
+    picks.push(i); from = i;
+  }
+  para.innerHTML = [...src].map((c, i) => `<span data-i="${i}">${c === ' ' ? ' ' : c}</span>`).join('');
+  const target = add(el, 'abs serif nowrap', [...TITLE].map((c) => `<span>${c === ' ' ? '&nbsp;' : c}</span>`).join(''),
+    'left:0;right:0;top:400px;text-align:center;font-size:220px;line-height:1;letter-spacing:-0.015em;color:transparent');
+  tl.fromTo(para, { opacity: 0 }, { opacity: 1, duration: 0.5, immediateRender: false }, 11.5);
+  const S = 220 / 46;
+  const letters = [];
+  picks.forEach((i, k) => {
+    if (i === null) return;
+    const span = para.querySelector(`[data-i="${i}"]`), tgt = target.children[k];
+    span.style.display = 'inline-block'; span.style.transformOrigin = '0 0';
+    letters.push({ span, tgt, k });
   });
-  const scrim = add(el, 'abs', '', `left:${FR.x}px;top:${FR.y}px;width:${FR.w}px;height:${FR.h}px;background:rgba(0,0,50,0.8)`);
-  tl.set(scrim, { opacity: 0 }, 0);
-  tl.to(scrim, { opacity: 1, duration: 0.4 }, 34.7);
+  // Measured once layout exists; offsets are in stage pixels.
+  const o = { lit: 0, fade: 0, fly: 0 };
+  tl.set(o, { lit: 0, fade: 0, fly: 0 }, 0);
+  tl.to(o, { lit: 1, duration: 1.1, ease: 'none' }, 12.2);
+  tl.to(o, { fade: 1, duration: 0.6, ease: 'sine.inOut' }, 13.4);
+  tl.to(o, { fly: 1, duration: 1.1, ease: 'expo.inOut' }, 13.8);
+  const geo = letters.map((L) => ({
+      dx: target.offsetLeft + L.tgt.offsetLeft - (para.offsetLeft + L.span.offsetLeft),
+      dy: target.offsetTop + L.tgt.offsetTop - (para.offsetTop + L.span.offsetTop) - 8,
+  }));
+  movers.push({ el: para, fn: () => {
+    para.style.color = `rgba(255,255,255,${0.3 * (1 - o.fade)})`;
+    letters.forEach((L, j) => {
+      const lit = o.lit * letters.length > j;
+      L.span.style.color = lit ? (o.fly > 0.98 ? '#ffffff' : '#00E2C1') : '';
+      const f = o.fly;
+      L.span.style.transform = `translate(${geo[j].dx * f}px, ${geo[j].dy * f}px) scale(${1 + (S - 1) * f})`;
+    });
+    return '';
+  } });
+  const rule = add(el, 'bar gold', '', 'left:610px;width:700px;top:680px;height:4px;transform-origin:50% 50%');
+  tl.set(rule, { scaleX: 0 }, 0);
+  tl.to(rule, { scaleX: 1, duration: 0.7, ease: 'power3.out' }, 15.0);
+});
+
+// ─── 17–34  Redlining the industry's standard terms ───────────────────────────
+const PILLARS = [
+  { label: 'Bespoke',    was: 'as-is',                   now: 'as your matter needs it' },
+  { label: 'Fitted',     was: 'in the same form for all', now: 'in the shape of your team' },
+  { label: 'Supervised', was: 'without warranty',        now: 'reviewed by a lawyer' },
+  { label: 'Adaptable',  was: 'may change at any time',  now: 'changes when the law does' },
+  { label: 'Ours',       was: 'licensed to you',         now: 'owned by us, accountable to you' },
+];
+const P0 = 17, PD = 3.4;
+PILLARS.forEach((q, k) => {
+  const a = P0 + k * PD;
+  shot(a, a + PD, (el) => {
+    add(el, 'abs sans', 'Standard terms', 'left:0;right:0;top:250px;text-align:center;font-size:20px;letter-spacing:0.36em;color:rgba(255,255,255,0.42)');
+    const was = add(el, 'abs serif nowrap', `<span class="wv">“${q.was}”</span>`, 'left:0;right:0;top:300px;text-align:center;font-size:120px;line-height:1.1;letter-spacing:-0.015em;color:rgba(255,255,255,0.9)');
+    tl.fromTo(was, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.45, ease: 'power3.out', immediateRender: false }, a + 0.1);
+    const wv = was.firstChild; wv.style.position = 'relative'; wv.style.display = 'inline-block';
+    const strike = add(wv, 'bar', '', 'left:-10px;right:-10px;top:56%;height:8px;transform-origin:0 50%');
+    tl.set(strike, { scaleX: 0 }, 0);
+    tl.to(strike, { scaleX: 1, duration: 0.4, ease: 'power2.inOut' }, a + 1.0);
+    tl.to(was, { color: 'rgba(255,255,255,0.32)', duration: 0.3 }, a + 1.1);
+    const now = add(el, 'abs serif teal nowrap', q.now, 'left:0;right:0;top:500px;text-align:center;font-size:120px;line-height:1.1;letter-spacing:-0.015em');
+    tl.fromTo(now, { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.55, ease: 'power3.out', immediateRender: false }, a + 1.35);
+    const lab = add(el, 'abs sans teal', q.label, 'left:0;right:0;top:720px;text-align:center;font-size:24px;letter-spacing:0.42em');
+    tl.fromTo(lab, { opacity: 0 }, { opacity: 1, duration: 0.4, immediateRender: false }, a + 1.8);
+    const n = add(el, 'abs sans', `0${k + 1} / 05`, 'right:120px;top:120px;font-size:18px;letter-spacing:0.3em;color:rgba(255,255,255,0.35)');
+    tl.to([was, now, lab, n], { opacity: 0, duration: 0.3 }, a + PD - 0.3);
+  });
+});
+
+// ─── 34–40.2  Privileged & confidential ───────────────────────────────────────
+const FR = { x: 200, y: 110, w: 1520, h: 860 };
+const LOCK = { x: 580, y: 360, w: 760, h: 300 };
+const frame = { p: 0, k: 0 };
+shot(34, 45, (el) => {
+  const pg = add(el, 'page rw', pageHTML(12), 'left:810px;top:230px;transform-origin:50% 50%;transform:scale(1.55)');
+  tl.fromTo(pg, { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out', immediateRender: false }, 34.0);
+  const stamp = add(el, 'abs sans teal nowrap', 'Privileged &amp; Confidential',
+    'left:700px;top:440px;font-size:44px;letter-spacing:0.18em;padding:14px 26px;border:5px solid #00E2C1;transform-origin:50% 50%');
+  tl.set(stamp, { opacity: 0 }, 0);
+  tl.fromTo(stamp, { opacity: 0, scale: 1.8, rotation: -8 }, { opacity: 1, scale: 1, rotation: -8, duration: 0.18, ease: 'power4.in', immediateRender: false }, 34.9);
+  // The outsider: a standard page slides in and stops dead at the wall.
+  const gray = add(el, 'page gray', pageHTML(3), 'left:0;top:0;transform-origin:0 0');
+  const o = { u: 0 };
+  tl.set(o, { u: 0 }, 0);
+  tl.to(o, { u: 1, duration: 0.5, ease: 'none' }, 36.6);
+  move(gray, () => `translate(${lerp(2100, FR.x + FR.w + 8, o.u)}px, 330px) scale(1.4)`);
   const copy = add(el, 'abs serif white nowrap', words('Your information.') + '<span class="teal">' + words('Our walls.') + '</span>',
-    'left:0;right:0;top:470px;text-align:center;font-size:118px;letter-spacing:-0.015em');
-  slam(copy, 35.0, { stagger: 0.08 });
-  tl.to(copy, { opacity: 0, duration: 0.3 }, 38.0);
-  // The close: everything but the wall goes; the wall becomes the lockup frame.
-  tl.to([wl.plane, scrim], { opacity: 0, duration: 0.4 }, 38.2);
-  tl.to(outside, { opacity: 0, duration: 0.4 }, 38.2);
+    'left:0;right:0;top:830px;text-align:center;font-size:84px;letter-spacing:-0.01em');
+  slam(copy, 37.3, { stagger: 0.12, dur: 0.6, y: 24 });
+  tl.to([pg, stamp, copy, gray], { opacity: 0, duration: 0.4 }, 40.1);
   const lock = add(el, 'abs', '<div id="lockup"><img src="assets/lockup-teal-on-dark.png" alt="McDermott Studio"></div>', `left:${960 - 280}px;top:${540 - 75}px`);
   const img = lock.querySelector('img');
   const missing = () => { img.remove(); add(lock.firstChild, 'missing', 'Lockup PNG · assets/lockup-teal-on-dark.png'); };
   if (img.complete && img.naturalWidth === 0) missing(); else img.addEventListener('error', missing);
   tl.set(lock, { opacity: 0 }, 0);
-  tl.to(lock, { opacity: 1, duration: 0.8, ease: 'sine.inOut' }, 39.2);
+  tl.to(lock, { opacity: 1, duration: 1.0, ease: 'sine.inOut' }, 41.2);
   const sign = add(el, 'abs serif white nowrap', words('Built in-house. Built for law.'), 'left:0;right:0;top:760px;text-align:center;font-size:56px');
-  slam(sign, 40.4, { stagger: 0.1, y: 30 });
-  // The wall itself, drawn fast around the frame; the gold hairline closes it.
-  ['t', 'r', 'b', 'l', 'g'].forEach((k) => add(el, k === 'g' ? 'bar gold' : 'bar', '', '').id = 'w-' + k);
+  slam(sign, 42.3, { stagger: 0.14, dur: 0.6, y: 20 });
+  ['t', 'r', 'b', 'l', 'g'].forEach((k) => { add(el, k === 'g' ? 'bar gold' : 'bar').id = 'w-' + k; });
 });
 tl.set(frame, { p: 0, k: 0 }, 0);
-tl.to(frame, { p: 0.92, duration: 0.8, ease: 'power2.in' }, 31.6);
-tl.to(frame, { p: 1, duration: 0.12, ease: 'none' }, 32.4);   // gold seal: the hit
-tl.to(frame, { k: 1, duration: 0.8, ease: 'power3.inOut' }, 38.3);
+tl.to(frame, { p: 0.93, duration: 0.8, ease: 'power2.inOut' }, 35.4);
+tl.to(frame, { p: 1, duration: 0.15, ease: 'none' }, 36.2);   // gold seal: the hit
+tl.to(frame, { k: 1, duration: 0.9, ease: 'power3.inOut' }, 40.3);
 
 const WT = 3, GOLD = 0.3;
 function drawFrame() {

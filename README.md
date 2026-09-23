@@ -12,12 +12,9 @@ These lines and implications are **not cleared**. Do not show the film outside t
 | Beat 4, 36s | **"Your information. Our walls."** | A data-residency/security claim. |
 | Beat 4 visuals (sealed boundary, gray form stopped at the wall) | **Implies client data never touches a third party** | Must match actual data flows, including any model or hosting providers. |
 | Beat 1 | **The fictional "Standard Terms" boilerplate** (e.g. "have not been developed to meet its individual requirements", data "processed by sub-processors, wherever located") | Invented vendor-style terms; must not read as quoting any real provider. |
-| Beat 3, 20.6–33s | **Bespoke: "Built around the matter in front of us."** | Claims tools are built per matter. |
-| Beat 3 | **Fitted: "Shaped to the way our teams already work."** | Workflow-fit claim. |
-| Beat 3 | **Supervised: "Every output is reviewed by a lawyer."** | Absolute human-review claim; must be true for every tool. |
-| Beat 3 | **Adaptable: "Amended as fast as the law moves."** | Speed-of-change claim. |
-| Beat 3 | **Ours: "Owned by us, improved by us, accountable to you."** | Ownership/accountability claim; check licensing of underlying models. |
-| Beat 3 | **The 35 matter names on the rewritten pages** (e.g. "Built for this hospital merger.") | Fictional and generic, but check none reads as a real client matter. |
+| 17–34s | **The five before/after pairs** ("without warranty" → "reviewed by a lawyer"; "licensed to you" → "owned by us, accountable to you"; etc.) | The "before" lines paraphrase common vendor terms; the "after" lines are factual claims about Studio tools. |
+| Throughout | **The matter names on the rewritten pages** (e.g. "Built for this hospital merger.") | Fictional and generic, but check none reads as a real client matter. |
+| 34s | **"PRIVILEGED & CONFIDENTIAL" stamp** | Shown on a fictional page as a visual device; confirm it cannot be read as a claim about privilege. |
 
 ## Run it
 
@@ -54,18 +51,18 @@ tools/                vendor, static server, Puppeteer export
 
 ## Beat map
 
-"The Document": a kinetic-type film made of legal text. Hard cuts every 0.5–2.6 s, type set huge.
+"The Document": a film made of legal text. Six moments, every line held long enough to read.
 
 | Section | Time | What happens |
 |---|---|---|
-| Standard terms | 0–8.2 s | Six 0.55 s cuts of boilerplate phrases ("as-is", "no customization", "wherever located"…), then a slam pull-back to a wall of 128 identical pages. 4.5 s "Most firms are buying the same tools." |
-| The turn | 8.2–12.6 s | The clause, huge, struck through in teal. "We chose to" types; "build our own." slams in teal. |
-| Title | 12.6–16 s | "McDermott Studio" with a gold rule |
-| Built for each matter | 16–30.6 s | The redline rips across the wall. Five pillars, five compositions: Bespoke (matter names flip), Fitted (columns snap to a line), Supervised (gold sign-off stroke), Adaptable (version counter, word rewrites itself), Ours. |
-| Inside the walls | 30.6–38.2 s | The frame of the film becomes the wall, sealed in gold at 32.5 s; standard pages fly in and stop dead against it. 35 s "Your information. Our walls." |
-| The answer | 38.2–45 s | The wall shrinks to frame the lockup. 40.4 s "Built in-house. Built for law." |
+| The same terms | 0–6.5 s | Macro on one boilerplate clause; pull back: it is on every page of a 128-page wall. 3.7 s "Most firms are buying the same tools." |
+| One stroke | 6.5–11.5 s | A teal line slices through the whole wall; every clause is struck. 8.1 s "We chose to build our own." |
+| The name | 11.5–17 s | The title's letters light up inside a paragraph of boilerplate, everything else fades, and they fly together into "McDermott Studio". |
+| Redlining standard terms | 17–34 s | Five industry clichés struck and rewritten, 3.4 s each: "as-is" → as your matter needs it (Bespoke) · "in the same form for all" → in the shape of your team (Fitted) · "without warranty" → reviewed by a lawyer (Supervised) · "may change at any time" → changes when the law does (Adaptable) · "licensed to you" → owned by us, accountable to you (Ours) |
+| Privileged & confidential | 34–40.3 s | Our page is stamped PRIVILEGED & CONFIDENTIAL; the frame is walled in teal and sealed in gold (36.2 s); a standard page stops dead at the wall. 37.3 s "Your information. Our walls." |
+| The answer | 40.3–45 s | The wall shrinks to frame the lockup. 42.3 s "Built in-house. Built for law." |
 
-Sound cues: low pad 0–30.6 s · rise 30.6–32.5 s · low hit on the gold seal at 32.5 s · silence from 38.2 s.
+Sound cues: low pad 0–34 s · rise 34–36.2 s · low hit on the gold seal at 36.2 s · silence from 40.3 s.
 
 ## Status
 
