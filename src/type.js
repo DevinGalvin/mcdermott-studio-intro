@@ -6,11 +6,13 @@ export const CUES = {
   b1:  { in: 5.0,  out: 8.1,  from: '0.14em', to: '0.01em' },
   b2a: { in: 11.0, out: 13.1, from: '0.14em', to: '0.01em' },
   b2b: { in: 14.0, out: 16.3, from: '0.34em', to: '-0.005em', blur: 18, dur: 2.2 },
-  b3:  { in: 26.0, out: 28.3, from: '0.14em', to: '0.01em' },
-  b4:  { in: 36.0, out: 39.3, from: '0.14em', to: '0.01em' },
+  // The tour: one label + one line per tool, ~2 s on screen each.
+  ...Object.fromEntries([0, 1, 2, 3, 4].map((k) => [`t${k + 1}`,
+    { in: 21.35 + 2.8 * k, out: 23.4 + 2.8 * k, from: '0.1em', to: '0.01em', blur: 8, dur: 0.8, outDur: 0.4 }])),
+  b4:  { in: 39.0, out: 40.5, from: '0.14em', to: '0.01em', dur: 1.0, outDur: 0.5 },
   b5:  { in: 43.0, out: null, from: '0.14em', to: '0.01em' },
 };
-export const LOCKUP_IN = 41.8;
+export const LOCKUP_IN = 41.6;
 
 export function buildType(tl, root) {
   for (const [id, c] of Object.entries(CUES)) {
@@ -20,7 +22,7 @@ export function buildType(tl, root) {
       { opacity: 0, filter: `blur(${blur}px)`, letterSpacing: c.from },
       { opacity: 1, filter: 'blur(0px)', letterSpacing: c.to, duration: dur, ease: 'power3.out', immediateRender: false }, c.in);
     if (c.out != null) {
-      tl.to(el, { opacity: 0, filter: 'blur(4px)', duration: 0.7, ease: 'power2.in' }, c.out);
+      tl.to(el, { opacity: 0, filter: 'blur(4px)', duration: c.outDur ?? 0.7, ease: 'power2.in' }, c.out);
     }
     tl.set(el, { opacity: 0 }, 0);
   }

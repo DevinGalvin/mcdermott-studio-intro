@@ -2,9 +2,9 @@ import * as THREE from 'three';
 import { gsap } from 'gsap';
 import { C, buildEnvironment } from './util.js';
 import { buildPost } from './post.js';
-import { cameraMove, applyRig, focusDistance } from './camera.js';
+import { cameraMove, applyRig } from './camera.js';
 import { buildCity, HERO_POS } from './beats/city.js';
-import { buildInstruments, instPos, AZ } from './beats/instruments.js';
+import { buildDistrict, toolPos, DISTRICT } from './beats/district.js';
 import { buildType } from './type.js';
 import { createPlayer, renderWav } from './audio.js';
 
@@ -18,13 +18,12 @@ if (EXPORT) document.body.classList.add('export');
 export const BEATS = [
   { id: 'b1', name: 'The buy reflex', start: 0 },
   { id: 'b2', name: 'The turn', start: 9 },
-  { id: 'b3', name: 'Anything, for anyone', start: 17 },
-  { id: 'b4', name: 'Inside the guardrails', start: 29 },
-  { id: 'b5', name: 'The answer', start: 40 },
+  { id: 'b3', name: 'Built, one by one', start: 17 },
+  { id: 'b4', name: 'Inside the guardrails', start: 35 },
+  { id: 'b5', name: 'The answer', start: 41 },
 ];
-// 6-frame dips to navy. Only at true cuts: 1→2, 3→4 and 4→5 are written as continuous
-// moves in the brief ("every tower dims", "camera pulls back", "resolves"). Flip to true to dip.
-const DIPS = { 9: false, 17: true, 29: false, 40: false };
+// One continuous shot, one world: no dips. The mechanism stays for a future cut: { second: true }.
+const DIPS = {};
 
 // ─── Renderer, scene, camera ──────────────────────────────────────────────────
 const canvas = document.getElementById('gl');
@@ -42,83 +41,57 @@ scene.background = BG;
 scene.fog = new THREE.FogExp2(BG.clone(), 0.006);
 scene.environment = buildEnvironment(renderer);
 
-const camera = new THREE.PerspectiveCamera(30, W / H, 2, 1200);
+const camera = new THREE.PerspectiveCamera(30, W / H, 40, 1400); // camera never gets closer than ~150
 const post = buildPost(renderer, scene, camera, W * RS, H * RS);
 
 const city = buildCity(scene);
-const inst = buildInstruments();
-scene.add(city.group, inst.group);
+const district = buildDistrict(city);
+scene.add(city.group, district.group);
 
 // ─── Master timeline ──────────────────────────────────────────────────────────
 const tl = gsap.timeline({ paused: true });
 for (const b of BEATS) tl.addLabel(b.id, b.start);
 
-// Shot A, beats 1–2: descend over the city, then push toward the one tower that lights.
-const H3 = HERO_POS;
-const shotA = cameraMove([
-  { t: 0,  tx: -4,        ty: 0,  tz: 4,         r: 430, el: 58, az: 8,  fov: 7 },
-  { t: 9,  tx: H3.x * .5, ty: 3,  tz: H3.z * .5, r: 315, el: 46, az: 38, fov: 7 },
-  { t: 12, tx: H3.x,      ty: 7,  tz: H3.z,      r: 250, el: 40, az: 44, fov: 7 },
-  { t: 17, tx: H3.x,      ty: 9,  tz: H3.z,      r: 185, el: 36, az: 50, fov: 7 },
+// One camera move for the whole film. Near-orthographic 7° lens throughout.
+const H3 = HERO_POS, DC = { tx: DISTRICT.cx, tz: DISTRICT.cz };
+const tool = (k, el, az, t) => { const p = toolPos(k, 6.2); return { t, tx: p.x, ty: p.y, tz: p.z, r: 235, el, az, fov: 7 }; };
+const shot = cameraMove([
+  { t: 0,    tx: -4,        ty: 0, tz: 4,         r: 430, el: 58, az: 8,  fov: 7 },
+  { t: 9,    tx: H3.x * .5, ty: 3, tz: H3.z * .5, r: 315, el: 46, az: 38, fov: 7 },
+  { t: 12,   tx: H3.x,      ty: 7, tz: H3.z,      r: 250, el: 40, az: 44, fov: 7 },
+  { t: 16.3, tx: H3.x,      ty: 9, tz: H3.z,      r: 185, el: 36, az: 50, fov: 7 },
+  { t: 19.8, ...DC, ty: 6, r: 330, el: 38, az: 44, fov: 7 },           // the build-out
+  tool(0, 22, 32, 22.4), tool(1, 22, 36, 25.2), tool(2, 22, 40, 28.0),   // one by one
+  tool(3, 30, 44, 30.8), tool(4, 30, 36, 33.6),
+  { t: 35.8, ...DC, ty: 4, r: 360, el: 46, az: 48, fov: 7 },           // the guardrails
+  { t: 39.2, ...DC, ty: 2, r: 380, el: 54, az: 42, fov: 7 },
+  { t: 42.2, ...DC, ty: 0, r: 180, el: 89.5, az: 0, fov: 7 },          // the answer, top-down
+  { t: 45,   ...DC, ty: 0, r: 180, el: 89.5, az: 0, fov: 7 },
 ]);
-tl.to(shotA, { u: 1, duration: 17, ease: 'none' }, 0);
+tl.to(shot, { u: 1, duration: DURATION, ease: 'none' }, 0);
 
-// Shot B, beats 3–5: a slow orbit past each instrument, then the long pull-back, then the rise.
-const IY = [1.3, 2.2, 2.0, 1.3, 2.6];
-const at = (k, dt) => { const p = instPos(k, IY[k]); return { tx: p.x, ty: p.y, tz: p.z }; };
-const shotB = cameraMove([
-  { t: 17,   ...at(0), r: 10.5, el: 12, az: AZ[0] - 10, fov: 30 },
-  { t: 19,   ...at(0), r: 8.4,  el: 10, az: AZ[0] + 16, fov: 30 },
-  { t: 21,   ...at(1), r: 8.4,  el: 9,  az: AZ[1] + 16, fov: 30 },
-  { t: 23,   ...at(2), r: 8.4,  el: 11, az: AZ[2] + 16, fov: 30 },
-  { t: 25,   ...at(3), r: 8.4,  el: 9,  az: AZ[3] + 16, fov: 30 },
-  { t: 27.2, ...at(4), r: 9.2,  el: 8,  az: AZ[4] + 16, fov: 30 },
-  { t: 29,   ...at(4), r: 10.5, el: 10, az: AZ[4] + 24, fov: 30 },
-  { t: 33,   tx: 0, ty: 1.2, tz: 0, r: 31, el: 26, az: 352, fov: 32 },
-  { t: 40,   tx: 0, ty: 1.0, tz: 0, r: 39, el: 36, az: 364, fov: 32 },
-  { t: 42.8, tx: 0, ty: 0,   tz: 0, r: 59, el: 89.4, az: 372, fov: 30 },
-  { t: 45,   tx: 0, ty: 0,   tz: 0, r: 59, el: 89.4, az: 372, fov: 30 },
-]);
-tl.to(shotB, { u: 1, duration: 28, ease: 'none' }, 17);
-
-// Focus: follows the rig target in shot A; racks instrument to instrument in beat 3.
-const fp = { x: 0, y: 0, z: 0, follow: 1 };
-tl.set(fp, { follow: 0, ...xyz(instPos(0, IY[0])) }, 17);
-for (let k = 1; k < 5; k++) tl.to(fp, { ...xyz(instPos(k, IY[k])), duration: 0.9, ease: 'power2.inOut' }, 17.7 + 2 * k);
-tl.to(fp, { x: 0, y: 1.2, z: 0, duration: 2.5, ease: 'sine.inOut' }, 29.6);
-function xyz(v) { return { x: v.x, y: v.y, z: v.z }; }
-
-// Post and atmosphere by beat.
-const P = post.state, fog = { d: 0.006 };
+// Post and atmosphere. No glow (bloom stays in the pipeline at 0); no depth of field.
+const P = post.state, fog = { d: 0.0011 };
 tl.set(P, { aperture: 0, bloom: 0, vignette: 0.32, ca: 0.0008 }, 0);
-tl.set(fog, { d: 0.0011 }, 0);
 tl.to(fog, { d: 0.0024, duration: 3, ease: 'sine.inOut' }, 9.0);
-tl.set(P, { aperture: 0.0014, bloom: 0, vignette: 0.55 }, 17);
-tl.set(fog, { d: 0.02 }, 17);
-tl.to(P, { aperture: 0.00035, duration: 3, ease: 'sine.inOut' }, 29.5);
-tl.to(fog, { d: 0.009, duration: 4, ease: 'sine.inOut' }, 29.5);
-tl.to(P, { aperture: 0, duration: 2.5, ease: 'sine.inOut' }, 40);
-tl.to(fog, { d: 0.004, duration: 2.5, ease: 'sine.inOut' }, 40);
+tl.to(fog, { d: 0.0014, duration: 2, ease: 'sine.inOut' }, 17.5);
+tl.to(fog, { d: 0.0, duration: 2, ease: 'sine.inOut' }, 40.4);
 
 city.timeline(tl);
-inst.timeline(tl);
+district.timeline(tl);
 buildType(tl, document.getElementById('type'));
 tl.set({}, {}, DURATION);
 
 // ─── Frame ────────────────────────────────────────────────────────────────────
-const rig = {}, fpv = new THREE.Vector3();
+const rig = {};
 function renderAt(t) {
   t = Math.min(DURATION, Math.max(0, t));
   tl.time(t, true);
-  const inA = t < 17;
-  city.group.visible = inA;
-  inst.group.visible = !inA;
-  (inA ? shotA : shotB).sample(rig);
+  shot.sample(rig);
   applyRig(camera, rig);
-  if (fp.follow) fpv.set(rig.tx, rig.ty, rig.tz); else fpv.set(fp.x, fp.y, fp.z);
-  P.focus = focusDistance(camera, fpv);
   scene.fog.density = fog.d;
-  if (inA) city.update(t); else inst.update(t);
+  city.update(t);
+  district.update(t);
 
   let dip = 0;
   for (const [c, on] of Object.entries(DIPS)) if (on) dip = Math.max(dip, 1 - Math.abs(t - +c) / (3 / FPS));

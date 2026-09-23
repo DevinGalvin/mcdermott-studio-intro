@@ -48,13 +48,16 @@
   .line.copy  { top: 858px; font-size: 46px; letter-spacing: 0.01em; }
   .line.title { top: 468px; font-size: 118px; letter-spacing: -0.005em; }
   .line.sign  { top: 944px; font-size: 38px; }
+  .line.tool  { top: 816px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .line.tool .label { font-size: 17px; letter-spacing: 0.32em; opacity: 0.85; }
+  .line.tool .tline { font-size: 44px; }
   .label {
     font-family: Arial, Helvetica, sans-serif; font-size: 15px;
     letter-spacing: 0.32em; text-transform: uppercase; color: var(--white);
   }
 
   #lockup {
-    position: absolute; left: 50%; top: 500px;
+    position: absolute; left: 50%; top: 540px;
     width: 600px; transform: translate(-50%, -50%);
     opacity: 0;
   }
@@ -114,7 +117,11 @@
         <div class="line copy" data-cue="b1">Most firms are buying the same tools.</div>
         <div class="line copy" data-cue="b2a">We chose to build our own.</div>
         <div class="line title" data-cue="b2b">McDermott Studio</div>
-        <div class="line copy" data-cue="b3">Built for the matter. Not the market.</div>
+        <div class="line tool" data-cue="t1"><span class="label">Bespoke</span><span class="tline">Built around the matter, not the market.</span></div>
+        <div class="line tool" data-cue="t2"><span class="label">Fitted</span><span class="tline">Works the way our teams already work.</span></div>
+        <div class="line tool" data-cue="t3"><span class="label">Supervised</span><span class="tline">Lawyers review what it produces.</span></div>
+        <div class="line tool" data-cue="t4"><span class="label">Adaptable</span><span class="tline">Changes as fast as the law does.</span></div>
+        <div class="line tool" data-cue="t5"><span class="label">Ours</span><span class="tline">We own it, so we can improve it tomorrow.</span></div>
         <div class="line copy" data-cue="b4">Your information. Our walls.</div>
         <div id="lockup"><img src="assets/lockup-teal-on-dark.png" alt="McDermott Studio"></div>
         <div class="line sign" data-cue="b5">Built in-house. Built for law.</div>

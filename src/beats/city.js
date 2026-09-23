@@ -10,7 +10,8 @@ import { C, brushedRoughness, contactTexture, softTexture } from '../util.js';
 const N = 11, GAP = 6.2, W = 3.4, H = 15, T = 0.22, BASE = 0.28;
 const MONO_W = 1.9, MONO_H = 10.5, SEAT = BASE, DROP = 70;
 export const HERO = { i: 6, j: 4 };
-const pos = (i) => (i - (N - 1) / 2) * GAP;
+export const pos = (i) => (i - (N - 1) / 2) * GAP;
+export const VESSEL = { W, H, T, BASE, GAP };
 export const HERO_POS = new THREE.Vector3(pos(HERO.i), 0, pos(HERO.j));
 export const CITY_H = H;
 
@@ -136,6 +137,8 @@ export function buildCity(scene) {
     });
     // Beat 2: the studio light falls away; one vessel lights from within.
     tl.to(S, { key: 0.16, duration: 1.8, ease: 'power2.inOut' }, 9.0);
+    tl.to(S, { key: 0.5, duration: 2.0, ease: 'sine.inOut' }, 17.0);  // the build-out needs to read as product
+    tl.to(S, { key: 0.0, duration: 1.6, ease: 'sine.inOut' }, 40.4);  // the close
     tl.to(S, { ignite: 1, duration: 1.8, ease: 'power2.out' }, 9.2);
     tl.to(S, { floors, duration: 3.8, ease: 'power1.inOut' }, 9.4);
     tl.set(S, { goldOn: 1 }, 11.0);
@@ -151,7 +154,7 @@ export function buildCity(scene) {
     fill.intensity = 1.3 * (0.4 + 0.6 * S.key);
     scene.environmentIntensity = 0.12 + 0.88 * S.key;
 
-    tealLow.intensity = 240 * S.ignite;
+    tealLow.intensity = 70 * S.ignite;
     spill.material.opacity = 0.07 * S.ignite;
     heroGlass.attenuationColor.set('#3b3e4c').lerp(C.teal, 0.35 * S.ignite);
     plates.forEach((p, f) => {
@@ -164,10 +167,12 @@ export function buildCity(scene) {
     const front = BASE + S.floors * fh;
     core.visible = S.floors > 0.01; core.scale.y = Math.max(0.001, front - BASE);
     tealFront.position.y = front + 0.4;
-    tealFront.intensity = 110 * S.ignite * (S.floors < floors ? 1 : 0.6);
+    tealFront.intensity = 45 * S.ignite * (S.floors < floors ? 1 : 0.6);
     gold.visible = S.goldOn > 0; gold.position.y = S.goldY;
     goldLight.intensity = 5 * S.goldOn;
   }
 
-  return { group, timeline, update };
+  // Handles the district build (beats 3–5) uses: the slab in any cell, and the lighting state.
+  const slab = (i, j) => drops.find((d) => d.c.i === i && d.c.j === j);
+  return { group, timeline, update, slab, S, monoMat, monoGeo };
 }
