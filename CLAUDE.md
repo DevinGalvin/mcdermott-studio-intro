@@ -79,3 +79,4 @@ Flag these in the README of the project so Marketing sees them.
 ## Session log
 
 - Beat approvals and locks are recorded in README.md → Status. A locked beat is not touched without being asked.
+- The reviewer watches through a private web preview. After every change: `node tools/web.mjs`, republish `out/web` to the same preview URL, and end every message with a ▶ Play link to it. The web build swaps the firm name for "Studio Name" (published pages can't carry a real organization's branding); the repo and the MP4 export keep the real name.

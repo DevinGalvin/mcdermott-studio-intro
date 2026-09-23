@@ -11,6 +11,8 @@ import { createPlayer, renderWav } from './audio.js';
 const W = 1920, H = 1080, FPS = 60, DURATION = 45;
 const params = new URLSearchParams(location.search);
 const EXPORT = params.has('export');
+// Render scale: previews render the GL at a fraction of 1080p (type layer stays crisp).
+const RS = Math.min(1, Math.max(0.25, +(params.get('rs') ?? 1)));
 if (EXPORT) document.body.classList.add('export');
 
 export const BEATS = [
@@ -28,7 +30,7 @@ const DIPS = { 9: false, 17: true, 29: false, 40: false };
 const canvas = document.getElementById('gl');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance', preserveDrawingBuffer: EXPORT });
 renderer.setPixelRatio(1);
-renderer.setSize(W, H, false);
+renderer.setSize(W * RS, H * RS, false);
 renderer.toneMapping = THREE.NeutralToneMapping; // keeps navy and teal on-brand; ACES shifts them
 renderer.toneMappingExposure = 1.0;
 renderer.shadowMap.enabled = true;
@@ -41,7 +43,7 @@ scene.fog = new THREE.FogExp2(BG.clone(), 0.006);
 scene.environment = buildEnvironment(renderer);
 
 const camera = new THREE.PerspectiveCamera(30, W / H, 1, 900);
-const post = buildPost(renderer, scene, camera, W, H);
+const post = buildPost(renderer, scene, camera, W * RS, H * RS);
 
 const city = buildCity(scene);
 const inst = buildInstruments();
@@ -158,8 +160,20 @@ for (const b of BEATS) {
   m.innerHTML = `<span>${b.start}s ${b.name}</span>`; track.appendChild(m);
 }
 
-function play(from = t) { t = from; playing = true; last = performance.now(); audio.play(t); }
-function pause() { playing = false; audio.stop(); }
+const bigplay = document.getElementById('bigplay'), playbtn = document.getElementById('playbtn');
+const ICON_PLAY = '<svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg>';
+const ICON_PAUSE = '<svg viewBox="0 0 24 24"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>';
+let started = false;
+function syncUI() {
+  if (playing) started = true;
+  bigplay.hidden = playing || started; // the big button is the first-frame invitation only
+  playbtn.innerHTML = playing ? ICON_PAUSE : ICON_PLAY;
+  playbtn.setAttribute('aria-label', playing ? 'Pause' : 'Play');
+}
+function play(from = t) { t = from >= DURATION ? 0 : from; playing = true; last = performance.now(); audio.play(t); syncUI(); }
+function pause() { playing = false; audio.stop(); syncUI(); }
+bigplay.addEventListener('click', (e) => { e.stopPropagation(); play(t); });
+playbtn.addEventListener('click', () => (playing ? pause() : play(t)));
 function seek(to) { pause(); t = Math.min(DURATION, Math.max(0, to)); }
 
 addEventListener('keydown', (e) => {
@@ -174,7 +188,7 @@ addEventListener('keydown', (e) => {
 });
 let dragging = false;
 const scrub = (e) => { const r = track.getBoundingClientRect(); seek((e.clientX - r.left) / r.width * DURATION); };
-track.addEventListener('pointerdown', (e) => { dragging = true; track.setPointerCapture(e.pointerId); scrub(e); });
+track.addEventListener('pointerdown', (e) => { started = true; dragging = true; track.setPointerCapture(e.pointerId); scrub(e); });
 track.addEventListener('pointermove', (e) => dragging && scrub(e));
 track.addEventListener('pointerup', () => { dragging = false; });
 stage.addEventListener('click', () => (playing ? pause() : play(t >= DURATION ? 0 : t)));

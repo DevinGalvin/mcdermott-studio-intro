@@ -83,7 +83,25 @@
   #track .tick { position: absolute; top: 3px; width: 1px; height: 12px; background: #3a3f86; }
   #track .tick span { position: absolute; top: -1px; left: 5px; font-size: 10px; color: #5c62a8; white-space: nowrap; }
   #track .head { position: absolute; top: 2px; width: 2px; height: 14px; background: #fff; margin-left: -1px; }
-  body.export #dev { display: none; }
+  #bigplay {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    background: rgba(0, 0, 15, 0.35); border: 0; cursor: pointer; padding: 0;
+  }
+  #bigplay span {
+    width: 150px; height: 150px; border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.85);
+    display: flex; align-items: center; justify-content: center;
+  }
+  #bigplay svg { width: 52px; height: 52px; margin-left: 10px; fill: #fff; }
+  #bigplay:focus-visible span { outline: 3px solid var(--teal); outline-offset: 6px; }
+  #playbtn {
+    flex: none; width: 34px; height: 24px; border: 1px solid #2a2f78; border-radius: 4px;
+    background: transparent; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  #playbtn svg { width: 12px; height: 12px; fill: currentColor; }
+  #playbtn:focus-visible { outline: 2px solid var(--teal); }
+  @media (max-width: 720px) { #dev .hint, #track .tick span { display: none; } }
+  body.export #dev, body.export #bigplay { display: none; }
   body.export #frame { position: fixed; inset: 0; }
   body.export #stage { left: 0; top: 0; transform: none !important; }
 </style>
@@ -101,10 +119,12 @@
         <div id="lockup"><img src="assets/lockup-teal-on-dark.png" alt="McDermott Studio"></div>
         <div class="line sign" data-cue="b5">Built in-house. Built for law.</div>
       </div>
+      <button id="bigplay" aria-label="Play film"><span><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg></span></button>
     </div>
   </div>
   <div id="dev">
     <div class="row">
+      <button id="playbtn" aria-label="Play"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg></button>
       <span class="time" id="t">0.00 s</span>
       <span class="beat" id="beat"></span>
       <span class="fps" id="fps"></span>

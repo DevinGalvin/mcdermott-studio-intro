@@ -4,6 +4,7 @@
 //   npm run export                         full film → out/mcdermott-studio.mp4
 //   npm run export -- --from 29 --to 40    a range (still 60fps)
 //   npm run export -- --stills 5,12,26,36  just those seconds as PNGs, no video
+//   npm run export -- --preview            quick review cut: 960x540, 30fps (add --from/--to)
 //
 // Env: CHROME_PATH to use a specific Chrome; FFMPEG to use a specific ffmpeg.
 import puppeteer from 'puppeteer';
@@ -16,6 +17,8 @@ const root = new URL('..', import.meta.url).pathname;
 const out = root + 'out/';
 const stills = arg('stills', null)?.split(',').map(Number);
 const port = 4546;
+const preview = process.argv.includes('--preview');
+const scale = preview ? 0.5 : 1;
 const srv = await serve(port);
 
 const browser = await puppeteer.launch({
@@ -23,14 +26,15 @@ const browser = await puppeteer.launch({
   executablePath: process.env.CHROME_PATH || undefined,
   args: [...(process.getuid?.() === 0 ? ['--no-sandbox'] : []), '--ignore-gpu-blocklist', '--enable-gpu-rasterization', '--use-angle=default', '--enable-unsafe-swiftshader',
     '--autoplay-policy=no-user-gesture-required', '--hide-scrollbars', '--no-proxy-server'],
-  defaultViewport: { width: 1920, height: 1080, deviceScaleFactor: 1 },
+  defaultViewport: { width: 1920, height: 1080, deviceScaleFactor: scale },
 });
 const page = await browser.newPage();
 page.on('console', (m) => { if (m.type() === 'error') console.error('[page]', m.text()); });
 page.on('pageerror', (e) => console.error('[page]', e.message));
-await page.goto(`http://127.0.0.1:${port}/?export`, { waitUntil: 'networkidle0' });
+await page.goto(`http://127.0.0.1:${port}/?export&rs=${scale}`, { waitUntil: 'networkidle0' });
 await page.waitForFunction('window.__film && window.__film.ready === true', { timeout: 60000 });
-const { duration, fps } = await page.evaluate(() => ({ duration: __film.duration, fps: __film.fps }));
+const film = await page.evaluate(() => ({ duration: __film.duration, fps: __film.fps }));
+const duration = film.duration, fps = preview ? 30 : film.fps;
 
 async function grab(t, file) {
   await page.evaluate((t) => __film.renderAt(t), t);
@@ -53,10 +57,11 @@ if (stills) {
   const wav = await page.evaluate(() => __film.renderAudio());
   writeFileSync(out + 'sound.wav', Buffer.from(wav, 'base64'));
   const ff = process.env.FFMPEG || 'ffmpeg';
-  const name = from === 0 && to === duration ? 'mcdermott-studio.mp4' : `mcdermott-studio_${from}-${to}.mp4`;
+  const base = preview ? 'preview' : 'mcdermott-studio';
+  const name = from === 0 && to === duration ? `${base}.mp4` : `${base}_${from}-${to}.mp4`;
   const r = spawnSync(ff, ['-y', '-framerate', String(fps), '-i', dir + '%05d.png',
     '-ss', String(from), '-i', out + 'sound.wav',
-    '-c:v', 'libx264', '-preset', 'slow', '-crf', '14', '-pix_fmt', 'yuv420p', '-profile:v', 'high',
+    '-c:v', 'libx264', '-preset', preview ? 'veryfast' : 'slow', '-crf', preview ? '22' : '14', '-pix_fmt', 'yuv420p', '-profile:v', 'high',
     '-color_primaries', 'bt709', '-color_trc', 'bt709', '-colorspace', 'bt709', '-movflags', '+faststart',
     '-c:a', 'aac', '-b:a', '256k', '-shortest', out + name], { stdio: 'inherit' });
   if (r.status !== 0) { console.error('ffmpeg failed; frames are in', dir); process.exitCode = 1; }
