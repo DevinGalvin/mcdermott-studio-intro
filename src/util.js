@@ -47,27 +47,40 @@ export function brushedRoughness(seed = 7, size = 512) {
   return tex;
 }
 
-// A small procedural studio for reflections: navy dome, soft cool key panels,
-// one teal strip and a faint gold kicker. Glass and metal read "expensive" off this.
+// Procedural studio for reflections: a dark navy room with one large overhead softbox
+// and two long strip lights. No colored panels: teal is a light in the scene, never a
+// reflection painted onto everything. Glass edges and brushed metal read off these.
 export function buildEnvironment(renderer) {
   const s = new THREE.Scene();
-  s.background = C.deep.clone();
-  const panel = (w, h, color, intensity, pos, look) => {
+  s.background = new THREE.Color('#02031a');
+  const panel = (w, h, hex, k, pos) => {
     const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h),
-      new THREE.MeshBasicMaterial({ color: color.clone().multiplyScalar(intensity), side: THREE.DoubleSide }));
-    m.position.copy(pos); m.lookAt(look); s.add(m);
+      new THREE.MeshBasicMaterial({ color: new THREE.Color(hex).multiplyScalar(k), side: THREE.DoubleSide }));
+    m.position.copy(pos); m.lookAt(0, 0, 0); s.add(m);
   };
-  const o = new THREE.Vector3();
-  panel(14, 3, new THREE.Color('#8a93d6'), 1.2, new THREE.Vector3(0, 12, -6), o);
-  panel(10, 2, new THREE.Color('#5a64b0'), 0.8, new THREE.Vector3(-12, 6, 8), o);
-  panel(18, 0.4, C.teal, 2.0, new THREE.Vector3(10, 2, -10), o);
-  panel(6, 0.25, C.gold, 1.2, new THREE.Vector3(-9, 1, -9), o);
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), new THREE.MeshBasicMaterial({ color: C.abyss }));
-  floor.rotation.x = -Math.PI / 2; floor.position.y = -6; s.add(floor);
+  panel(16, 16, '#ecebe6', 1.3, new THREE.Vector3(-4, 14, 3));   // overhead softbox, cool
+  panel(22, 1.2, '#dcdcdc', 1.0, new THREE.Vector3(-14, 4, -6)); // strip left
+  panel(22, 1.2, '#cfcfcf', 0.55, new THREE.Vector3(14, 5, 8));   // strip right, dimmer
+  panel(40, 8, '#0a0f3c', 1.0, new THREE.Vector3(0, 2, -18));    // navy bounce wall
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), new THREE.MeshBasicMaterial({ color: '#000008' }));
+  floor.rotation.x = -Math.PI / 2; floor.position.y = -5; s.add(floor);
   const pm = new THREE.PMREMGenerator(renderer);
-  const env = pm.fromScene(s, 0.02).texture;
+  const env = pm.fromScene(s, 0.035).texture;
   pm.dispose();
   return env;
+}
+
+// Soft contact shadow: a dark radial blot laid on the floor under an object.
+let _contact;
+export function contactTexture() {
+  if (_contact) return _contact;
+  const cv = document.createElement('canvas'); cv.width = cv.height = 128;
+  const g = cv.getContext('2d');
+  const grd = g.createRadialGradient(64, 64, 8, 64, 64, 64);
+  grd.addColorStop(0, 'rgba(0,0,0,0.9)'); grd.addColorStop(0.5, 'rgba(0,0,0,0.45)'); grd.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = grd; g.fillRect(0, 0, 128, 128);
+  _contact = new THREE.CanvasTexture(cv);
+  return _contact;
 }
 
 // Line material whose colour can exceed 1.0 so it feeds the bloom pass.

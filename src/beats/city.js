@@ -1,185 +1,172 @@
 import * as THREE from 'three';
-import { C, rng, brushedRoughness, glowLine, segGeometry, boxEdges, softTexture, fogLayers } from '../util.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { C, brushedRoughness, contactTexture, softTexture } from '../util.js';
 
-// Beats 1–2. A grid of identical glass towers; the same gray monolith lowers into each.
-// Then every tower dims except one, which lights from within.
+// Beats 1–2, product-render look. A grid of identical open glass vessels on a dark
+// lacquer floor under one soft studio key. The same brushed-aluminium slab lowers into
+// each. Then the key falls away, and one vessel lights from inside: frosted floor plates
+// stack up through it and a gold point rises through its core.
 
-const N = 11, GAP = 7, W = 3.4, H = 16;
-const MONO_W = 1.7, MONO_H = 11, SEAT = H - MONO_H - 0.6, DROP = H + 24;
+const N = 11, GAP = 6.2, W = 3.4, H = 15, T = 0.22, BASE = 0.28;
+const MONO_W = 1.9, MONO_H = 10.5, SEAT = BASE, DROP = 70;
 export const HERO = { i: 6, j: 4 };
 const pos = (i) => (i - (N - 1) / 2) * GAP;
 export const HERO_POS = new THREE.Vector3(pos(HERO.i), 0, pos(HERO.j));
+export const CITY_H = H;
 
-export function buildCity() {
+const glassMat = () => new THREE.MeshPhysicalMaterial({
+  color: '#ffffff', metalness: 0, roughness: 0.035,
+  transmission: 1, thickness: T, ior: 1.5,
+  attenuationColor: new THREE.Color('#3b3e4c'), attenuationDistance: 0.9,
+  specularIntensity: 1, envMapIntensity: 1.0,
+});
+
+// One vessel = four walls + a base.
+function vesselParts() {
+  const r = 0.045;
+  const wx = new RoundedBoxGeometry(W, H, T, 2, r); wx.translate(0, H / 2, 0);
+  const wz = new RoundedBoxGeometry(T, H, W - 2 * T, 2, r); wz.translate(0, H / 2, 0);
+  const base = new RoundedBoxGeometry(W, BASE, W, 2, r); base.translate(0, BASE / 2, 0);
+  const off = W / 2 - T / 2;
+  return {
+    wx, wz, base,
+    place: (x, z) => ({
+      wx: [new THREE.Matrix4().makeTranslation(x, 0, z - off), new THREE.Matrix4().makeTranslation(x, 0, z + off)],
+      wz: [new THREE.Matrix4().makeTranslation(x - off, 0, z), new THREE.Matrix4().makeTranslation(x + off, 0, z)],
+      base: [new THREE.Matrix4().makeTranslation(x, 0, z)],
+    }),
+  };
+}
+
+export function buildCity(scene) {
   const group = new THREE.Group();
-  const r = rng(11);
   const cells = [];
-  for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) {
-    cells.push({ i, j, x: pos(i), z: pos(j), hero: i === HERO.i && j === HERO.j });
-  }
+  for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) cells.push({ i, j, x: pos(i), z: pos(j), hero: i === HERO.i && j === HERO.j });
   const others = cells.filter((c) => !c.hero);
 
-  // Ground: near-black navy, faintly reflective.
-  const ground = new THREE.Mesh(new THREE.PlaneGeometry(400, 400),
-    new THREE.MeshStandardMaterial({ color: '#01011c', roughness: 0.55, metalness: 0.4, envMapIntensity: 0.25 }));
-  ground.rotation.x = -Math.PI / 2;
-  group.add(ground);
+  // Floor: black-navy lacquer. Receives the key's soft shadows.
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(420, 420), new THREE.MeshPhysicalMaterial({
+    color: '#020320', roughness: 0.42, metalness: 0, clearcoat: 0.6, clearcoatRoughness: 0.3, envMapIntensity: 0.3 }));
+  floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true;
+  group.add(floor);
 
-  // Open-topped glass shells so the monolith can lower inside.
-  const shell = new THREE.BoxGeometry(W, H, W);
-  shell.translate(0, H / 2, 0);
-  const idx = shell.index.array, keep = [];
-  for (const g of shell.groups) if (g.materialIndex !== 2) for (let k = g.start; k < g.start + g.count; k++) keep.push(idx[k]);
-  shell.setIndex(keep); shell.clearGroups();
-  const glass = new THREE.MeshPhysicalMaterial({
-    color: '#1a2266', roughness: 0.12, metalness: 0.0,
-    transmission: 0.9, thickness: 0.4, ior: 1.45,
-    clearcoat: 1, clearcoatRoughness: 0.06, envMapIntensity: 0.9,
-    side: THREE.DoubleSide,
+  // Contact shadows ground every vessel.
+  const cs = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2),
+    new THREE.MeshBasicMaterial({ map: contactTexture(), color: 0x000000, transparent: true, opacity: 0.85, depthWrite: false }), cells.length);
+  cells.forEach((c, k) => cs.setMatrixAt(k, new THREE.Matrix4().compose(new THREE.Vector3(c.x, 0.01, c.z), new THREE.Quaternion(), new THREE.Vector3(W * 1.9, 1, W * 1.9))));
+  group.add(cs);
+
+  // The vessels, instanced.
+  const V = vesselParts();
+  const glass = glassMat();
+  const inst = (geo, n) => { const m = new THREE.InstancedMesh(geo, glass, n); m.receiveShadow = true; group.add(m); return m; };
+  const iwx = inst(V.wx, others.length * 2), iwz = inst(V.wz, others.length * 2), ib = inst(V.base, others.length);
+  others.forEach((c, k) => {
+    const p = V.place(c.x, c.z);
+    iwx.setMatrixAt(k * 2, p.wx[0]); iwx.setMatrixAt(k * 2 + 1, p.wx[1]);
+    iwz.setMatrixAt(k * 2, p.wz[0]); iwz.setMatrixAt(k * 2 + 1, p.wz[1]);
+    ib.setMatrixAt(k, p.base[0]);
   });
-  const towers = new THREE.InstancedMesh(shell, glass, others.length);
-  const m4 = new THREE.Matrix4();
-  others.forEach((c, k) => { m4.makeTranslation(c.x, 0, c.z); towers.setMatrixAt(k, m4); towers.setColorAt(k, C.white); });
-  group.add(towers);
 
-  // The hero tower is its own mesh so it can ignite.
-  const heroGlass = glass.clone();
-  heroGlass.emissive = C.teal.clone(); heroGlass.emissiveIntensity = 0;
-  const hero = new THREE.Mesh(shell, heroGlass);
+  // The hero vessel: same object, its own material so it can take the light.
+  const heroGlass = glassMat();
+  const hero = new THREE.Group();
+  const hp = V.place(0, 0);
+  for (const [geo, ms] of [[V.wx, hp.wx], [V.wz, hp.wz], [V.base, hp.base]]) for (const m of ms) {
+    const mesh = new THREE.Mesh(geo, heroGlass); mesh.applyMatrix4(m); mesh.receiveShadow = true; hero.add(mesh);
+  }
   hero.position.copy(HERO_POS);
   group.add(hero);
 
-  // Cold hairlines: tower edges plus a few floor bands. Navy family, not teal.
-  const edgeArr = [], bandArr = [], heroEdge = [];
-  for (const c of cells) {
-    boxEdges(c.hero ? heroEdge : edgeArr, c.x, 0, c.z, W, H, W);
-    if (c.hero) continue;
-    for (let y = 2; y < H; y += 2) boxEdges(bandArr, c.x, y, c.z, W, 0, W);
-  }
-  const edgeMat = glowLine(C.steel, 3.2, 0.9);
-  const bandMat = glowLine(C.steel, 2.0, 0.35);
-  const edges = new THREE.LineSegments(segGeometry(edgeArr), edgeMat);
-  const bands = new THREE.LineSegments(segGeometry(bandArr), bandMat);
-  const heroEdgeMat = glowLine(C.steel, 3.2, 0.9);
-  const heroEdges = new THREE.LineSegments(segGeometry(heroEdge), heroEdgeMat);
-  group.add(edges, bands, heroEdges);
-
-  // Street lights: dim, cold, regular.
-  const lamps = [];
-  for (let a = 0; a < N + 1; a++) for (let b = 0; b < N * 4; b++) {
-    const s = (a - N / 2) * GAP, u = (b / (N * 4) - 0.5) * N * GAP;
-    lamps.push(s, 0.15, u, u, 0.15, s);
-  }
-  const lampGeo = new THREE.BufferGeometry();
-  lampGeo.setAttribute('position', new THREE.Float32BufferAttribute(lamps, 3));
-  const lampMat = new THREE.PointsMaterial({ color: C.steel.clone().multiplyScalar(2.5), size: 0.35, sizeAttenuation: true,
-    map: softTexture(), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending });
-  group.add(new THREE.Points(lampGeo, lampMat));
-
-  // The bought monolith: identical brushed gray slabs.
-  const rough = brushedRoughness(5);
-  rough.repeat.set(1, 4);
-  const monoMat = new THREE.MeshStandardMaterial({ color: C.gray, metalness: 0.85, roughness: 0.5, roughnessMap: rough, envMapIntensity: 0.7 });
-  const monoGeo = new THREE.BoxGeometry(MONO_W, MONO_H, MONO_W); monoGeo.translate(0, MONO_H / 2, 0);
+  // The bought tool: identical brushed-aluminium slabs.
+  const rough = brushedRoughness(5); rough.rotation = Math.PI / 2; rough.repeat.set(3, 1);
+  const monoMat = new THREE.MeshPhysicalMaterial({ color: '#3f4249', metalness: 0.9, roughness: 0.46, roughnessMap: rough,
+    anisotropy: 0.6, anisotropyRotation: Math.PI / 2, envMapIntensity: 0.28 });
+  const monoGeo = new RoundedBoxGeometry(MONO_W, MONO_H, MONO_W, 3, 0.08); monoGeo.translate(0, MONO_H / 2, 0);
   const monos = new THREE.InstancedMesh(monoGeo, monoMat, others.length);
+  monos.castShadow = true; monos.receiveShadow = true;
   const drops = others.map((c) => ({ c, y: SEAT + DROP }));
-  others.forEach((c, k) => monos.setColorAt(k, C.white));
   group.add(monos);
 
-  // Beat 2: a teal lattice drawn floor by floor inside the hero.
-  const lat = [], inset = 0.35, w = W - inset * 2, floors = 16, fh = H / floors;
-  const floorEnds = [];
+  // Key: one large soft cool light, high and to one side. Soft VSM shadows.
+  const key = new THREE.DirectionalLight('#fff8f0', 1.7);
+  key.position.set(-14, 90, 8); key.target.position.set(0, 0, 0);
+  key.castShadow = true;
+  key.shadow.mapSize.set(4096, 4096);
+  Object.assign(key.shadow.camera, { left: -50, right: 50, top: 50, bottom: -50, near: 10, far: 200 });
+  key.shadow.bias = -0.0004; key.shadow.normalBias = 0.03;
+  group.add(key, key.target);
+  const fill = new THREE.HemisphereLight('#0b0f3a', '#000008', 0.4);
+  group.add(fill);
+
+  // Beat 2 interior: frosted floor plates that stack floor by floor, a core, the light.
+  const floors = 14, fh = (H - BASE - 0.6) / floors, inner = W - 2 * T - 0.18;
+  const plateGeo = new RoundedBoxGeometry(inner, 0.07, inner, 2, 0.03);
+  const plates = [];
   for (let f = 0; f < floors; f++) {
-    const y0 = f * fh, y1 = y0 + fh, hx = w / 2;
-    const P = [[-hx, -hx], [hx, -hx], [hx, hx], [-hx, hx]];
-    for (let k = 0; k < 4; k++) {
-      const [ax, az] = P[k], [bx, bz] = P[(k + 1) % 4];
-      lat.push(ax, y0, az, ax, y1, az);                 // post
-      lat.push(ax, y0, az, bx, y1, bz);                 // brace
-      lat.push(ax, y1, az, bx, y1, bz);                 // floor ring
-      lat.push(ax * 0.35, y1, az * 0.35, bx * 0.35, y1, bz * 0.35); // inner ring
-    }
-    lat.push(0, y0, 0, 0, y1, 0);                       // core
-    floorEnds.push(lat.length / 3);
+    const m = new THREE.MeshPhysicalMaterial({ color: '#d9fff8', roughness: 0.38, transmission: 0.75, thickness: 0.07,
+      emissive: C.teal.clone(), emissiveIntensity: 0, transparent: true, opacity: 0 });
+    const p = new THREE.Mesh(plateGeo, m);
+    p.position.set(0, BASE + (f + 1) * fh, 0); p.visible = false;
+    hero.add(p); plates.push(p);
   }
-  const latGeo = segGeometry(lat);
-  latGeo.setDrawRange(0, 0);
-  const latMat = glowLine(C.teal, 2.4, 1);
-  const lattice = new THREE.LineSegments(latGeo, latMat);
-  lattice.position.copy(HERO_POS);
-  group.add(lattice);
+  const core = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 1, 20).translate(0, 0.5, 0),
+    new THREE.MeshBasicMaterial({ color: C.teal.clone().multiplyScalar(1.6) }));
+  core.position.y = BASE; core.scale.y = 0.001; core.visible = false;
+  hero.add(core);
+  const tealLow = new THREE.PointLight(C.teal, 0, 5.5, 2); tealLow.position.set(0, 1.2, 0); hero.add(tealLow);
+  const tealFront = new THREE.PointLight(C.teal, 0, 4.5, 2); hero.add(tealFront);
+  // Teal spill on the floor, painted rather than lit, so neighbours don't catch hot specks.
+  const spill = new THREE.Mesh(new THREE.PlaneGeometry(22, 22).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({
+    map: softTexture(), color: C.teal, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending }));
+  spill.position.y = 0.03; spill.userData.noDepth = true; hero.add(spill);
 
-  const tealLight = new THREE.PointLight(C.teal, 0, 30, 1.6);
-  tealLight.position.copy(HERO_POS).add(new THREE.Vector3(0, 4, 0));
-  group.add(tealLight);
+  const gold = new THREE.Mesh(new THREE.SphereGeometry(0.1, 20, 14), new THREE.MeshBasicMaterial({ color: C.gold.clone().multiplyScalar(5) }));
+  const goldLight = new THREE.PointLight(C.gold, 0, 6, 2); gold.add(goldLight);
+  gold.visible = false; hero.add(gold);
 
-  // Teal spill on the ground around the hero.
-  const spill = new THREE.Mesh(new THREE.PlaneGeometry(26, 26),
-    new THREE.MeshBasicMaterial({ map: softTexture(), color: C.teal, transparent: true, opacity: 0,
-      depthWrite: false, blending: THREE.AdditiveBlending }));
-  spill.rotation.x = -Math.PI / 2; spill.position.copy(HERO_POS).setY(0.05);
-  spill.userData.noDepth = true;
-  group.add(spill);
-
-  // A single gold point of light rising through the core.
-  const gold = new THREE.Mesh(new THREE.SphereGeometry(0.09, 16, 12),
-    new THREE.MeshBasicMaterial({ color: C.gold.clone().multiplyScalar(6) }));
-  const goldHalo = new THREE.Sprite(new THREE.SpriteMaterial({ map: softTexture(), color: C.gold, transparent: true,
-    opacity: 0.7, depthWrite: false, blending: THREE.AdditiveBlending }));
-  goldHalo.scale.setScalar(1.4); goldHalo.userData.noDepth = true;
-  const goldPt = new THREE.Group(); goldPt.add(gold, goldHalo);
-  const goldLight = new THREE.PointLight(C.gold, 0, 8, 2);
-  goldPt.add(goldLight);
-  goldPt.position.copy(HERO_POS).setY(0.3);
-  goldPt.visible = false;
-  group.add(goldPt);
-
-  // Low navy haze between the towers.
-  const haze = fogLayers({ count: 5, size: 160, y0: 1, y1: 9, color: C.navy.clone().multiplyScalar(1.6), opacity: 0.16, seed: 4 });
-  group.add(haze);
-
-  // State the timeline tweens.
-  const S = { dim: 0, ignite: 0, floors: 0, goldY: 0.3, goldOn: 0 };
+  const S = { key: 1, ignite: 0, floors: 0, goldY: BASE, goldOn: 0 };
 
   function timeline(tl) {
     // Beat 1: row by row, the same slab lowers and locks. Mechanical, identical.
     drops.forEach((d) => {
-      const at = 0.8 + d.c.j * 0.42 + d.c.i * 0.035;
-      tl.to(d, { y: SEAT + 0.5, duration: 2.1, ease: 'sine.inOut' }, at);
-      tl.to(d, { y: SEAT, duration: 0.28, ease: 'power3.in' }, at + 2.1);
+      const at = 0.6 + d.c.j * 0.44 + d.c.i * 0.03;
+      tl.to(d, { y: SEAT + 0.35, duration: 2.3, ease: 'sine.inOut' }, at);
+      tl.to(d, { y: SEAT, duration: 0.3, ease: 'power3.in' }, at + 2.3);
     });
-    // Beat 2: the city goes quiet; one tower lights from inside.
-    tl.to(S, { dim: 1, duration: 2.6, ease: 'power2.inOut' }, 9.0);
-    tl.to(S, { ignite: 1, duration: 3.0, ease: 'power2.inOut' }, 9.6);
-    tl.to(S, { floors: floors, duration: 5.4, ease: 'sine.inOut' }, 10.0);
-    tl.set(S, { goldOn: 1 }, 11.8);
-    tl.fromTo(S, { goldY: 0.3 }, { goldY: H + 0.8, duration: 4.8, ease: 'sine.inOut', immediateRender: false }, 11.8);
+    // Beat 2: the studio light falls away; one vessel lights from within.
+    tl.to(S, { key: 0.06, duration: 3.0, ease: 'power2.inOut' }, 9.0);
+    tl.to(S, { ignite: 1, duration: 3.2, ease: 'power2.inOut' }, 9.5);
+    tl.to(S, { floors, duration: 5.6, ease: 'sine.inOut' }, 9.9);
+    tl.set(S, { goldOn: 1 }, 11.6);
+    tl.fromTo(S, { goldY: BASE + 0.2 }, { goldY: H + 0.6, duration: 5.0, ease: 'sine.inOut', immediateRender: false }, 11.6);
   }
 
-  const col = new THREE.Color();
-  function update(t) {
-    const lit = 1 - 0.84 * S.dim;
-    col.setScalar(lit);
-    for (let k = 0; k < others.length; k++) { towers.setColorAt(k, col); monos.setColorAt(k, col); }
-    towers.instanceColor.needsUpdate = true; monos.instanceColor.needsUpdate = true;
+  const m4 = new THREE.Matrix4();
+  function update() {
     drops.forEach((d, k) => { m4.makeTranslation(d.c.x, d.y, d.c.z); monos.setMatrixAt(k, m4); });
     monos.instanceMatrix.needsUpdate = true;
-    edgeMat.opacity = 0.9 * (1 - 0.8 * S.dim);
-    bandMat.opacity = 0.35 * (1 - 0.85 * S.dim);
-    lampMat.opacity = 1 - 0.7 * S.dim;
-    heroEdgeMat.opacity = 0.9 * (1 - 0.7 * S.ignite);
 
-    heroGlass.emissiveIntensity = 0.22 * S.ignite;
-    tealLight.intensity = 60 * S.ignite;
-    spill.material.opacity = 0.22 * S.ignite;
-    const fi = Math.floor(S.floors), ff = S.floors - fi;
-    const a = fi > 0 ? floorEnds[fi - 1] : 0;
-    const b = fi < floors ? floorEnds[fi] : a;
-    latGeo.setDrawRange(0, Math.round(a + (b - a) * ff));
+    key.intensity = 1.7 * S.key;
+    fill.intensity = 0.4 * S.key;
+    scene.environmentIntensity = 0.12 + 0.88 * S.key;
 
-    goldPt.visible = S.goldOn > 0;
-    goldPt.position.y = S.goldY;
-    goldLight.intensity = 6 * S.goldOn;
+    tealLow.intensity = 240 * S.ignite;
+    spill.material.opacity = 0.16 * S.ignite;
+    heroGlass.attenuationColor.set('#3b3e4c').lerp(C.teal, 0.35 * S.ignite);
+    plates.forEach((p, f) => {
+      const k = THREE.MathUtils.clamp(S.floors - f, 0, 1);
+      p.visible = k > 0.001;
+      p.material.opacity = k;
+      p.material.emissiveIntensity = 0.9 + 2.2 * (1 - k) * (k > 0 ? 1 : 0); // arrives bright, settles
+      p.scale.setScalar(0.94 + 0.06 * k);
+    });
+    const front = BASE + S.floors * fh;
+    core.visible = S.floors > 0.01; core.scale.y = Math.max(0.001, front - BASE);
+    tealFront.position.y = front + 0.4;
+    tealFront.intensity = 110 * S.ignite * (S.floors < floors ? 1 : 0.6);
+    gold.visible = S.goldOn > 0; gold.position.y = S.goldY;
+    goldLight.intensity = 5 * S.goldOn;
   }
 
   return { group, timeline, update };

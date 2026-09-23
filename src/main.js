@@ -31,6 +31,8 @@ renderer.setPixelRatio(1);
 renderer.setSize(W, H, false);
 renderer.toneMapping = THREE.NeutralToneMapping; // keeps navy and teal on-brand; ACES shifts them
 renderer.toneMappingExposure = 1.0;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 const scene = new THREE.Scene();
 const BG = C.navy.clone().multiplyScalar(0.55);
@@ -38,10 +40,10 @@ scene.background = BG;
 scene.fog = new THREE.FogExp2(BG.clone(), 0.006);
 scene.environment = buildEnvironment(renderer);
 
-const camera = new THREE.PerspectiveCamera(30, W / H, 0.1, 600);
+const camera = new THREE.PerspectiveCamera(30, W / H, 1, 900);
 const post = buildPost(renderer, scene, camera, W, H);
 
-const city = buildCity();
+const city = buildCity(scene);
 const inst = buildInstruments();
 scene.add(city.group, inst.group);
 
@@ -52,10 +54,10 @@ for (const b of BEATS) tl.addLabel(b.id, b.start);
 // Shot A, beats 1–2: descend over the city, then push toward the one tower that lights.
 const H3 = HERO_POS;
 const shotA = cameraMove([
-  { t: 0,  tx: 0,         ty: 0,  tz: 0,         r: 135, el: 76, az: 18, fov: 30 },
-  { t: 9,  tx: H3.x * .5, ty: 2,  tz: H3.z * .5, r: 88,  el: 60, az: 30, fov: 30 },
-  { t: 13, tx: H3.x,      ty: 10, tz: H3.z,      r: 48,  el: 40, az: 38, fov: 30 },
-  { t: 17, tx: H3.x,      ty: 15, tz: H3.z,      r: 28,  el: 24, az: 44, fov: 32 },
+  { t: 0,  tx: 0,         ty: 0,  tz: 0,         r: 330, el: 60, az: 28, fov: 11 },
+  { t: 9,  tx: H3.x * .4, ty: 2,  tz: H3.z * .4, r: 285, el: 50, az: 34, fov: 11 },
+  { t: 13, tx: H3.x,      ty: 7,  tz: H3.z,      r: 205, el: 42, az: 38, fov: 12 },
+  { t: 17, tx: H3.x,      ty: 11, tz: H3.z,      r: 145, el: 37, az: 41, fov: 13 },
 ]);
 tl.to(shotA, { u: 1, duration: 17, ease: 'none' }, 0);
 
@@ -86,11 +88,11 @@ function xyz(v) { return { x: v.x, y: v.y, z: v.z }; }
 
 // Post and atmosphere by beat.
 const P = post.state, fog = { d: 0.006 };
-tl.set(P, { aperture: 0.00025, bloom: 0.7 }, 0);
-tl.set(fog, { d: 0.0055 }, 0);
-tl.to(P, { bloom: 1.05, duration: 4, ease: 'sine.inOut' }, 9.5);
-tl.to(fog, { d: 0.009, duration: 3, ease: 'sine.inOut' }, 9.0);
-tl.set(P, { aperture: 0.0014, bloom: 1.0 }, 17);
+tl.set(P, { aperture: 0.00018, bloom: 0.25, bloomThreshold: 0.9, bloomRadius: 0.4 }, 0);
+tl.set(fog, { d: 0.0011 }, 0);
+tl.to(P, { bloom: 0.45, duration: 4, ease: 'sine.inOut' }, 9.5);
+tl.to(fog, { d: 0.0024, duration: 3, ease: 'sine.inOut' }, 9.0);
+tl.set(P, { aperture: 0.0014, bloom: 1.0, bloomThreshold: 0.62, bloomRadius: 0.55 }, 17);
 tl.set(fog, { d: 0.02 }, 17);
 tl.to(P, { aperture: 0.00035, bloom: 0.9, duration: 3, ease: 'sine.inOut' }, 29.5);
 tl.to(fog, { d: 0.009, duration: 4, ease: 'sine.inOut' }, 29.5);

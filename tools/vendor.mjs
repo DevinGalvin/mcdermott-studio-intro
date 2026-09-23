@@ -6,7 +6,7 @@ const out = new URL('../vendor/', import.meta.url).pathname;
 rmSync(out, { recursive: true, force: true });
 mkdirSync(out + 'three/build', { recursive: true });
 cpSync(nm + 'three/build/three.module.js', out + 'three/build/three.module.js');
-for (const d of ['postprocessing', 'shaders', 'environments']) {
+for (const d of ['postprocessing', 'shaders', 'environments', 'geometries', 'lights']) {
   cpSync(nm + 'three/examples/jsm/' + d, out + 'three/addons/' + d, { recursive: true });
 }
 mkdirSync(out + 'gsap', { recursive: true });
