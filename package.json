@@ -1,0 +1,15 @@
+{
+  "name": "mcdermott-studio-film",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "vendor": "node tools/vendor.mjs",
+    "serve": "node tools/serve.mjs",
+    "export": "node tools/export.mjs"
+  },
+  "devDependencies": {
+    "three": "0.169.0",
+    "gsap": "3.13.0",
+    "puppeteer": "^24.20.0"
+  }
+}
