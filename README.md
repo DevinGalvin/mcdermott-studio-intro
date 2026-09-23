@@ -12,12 +12,12 @@ These lines and implications are **not cleared**. Do not show the film outside t
 | Beat 4, 36s | **"Your information. Our walls."** | A data-residency/security claim. |
 | Beat 4 visuals (sealed boundary, gray form stopped at the wall) | **Implies client data never touches a third party** | Must match actual data flows, including any model or hosting providers. |
 | Beat 1 | **The fictional "Standard Terms" boilerplate** (e.g. "have not been developed to meet its individual requirements", data "processed by sub-processors, wherever located") | Invented vendor-style terms; must not read as quoting any real provider. |
-| Beat 3, 18–29s | **1.1 Bespoke: "Built around the matter in front of us."** | Claims tools are built per matter. |
-| Beat 3 | **1.2 Fitted: "Shaped to the way our teams already work."** | Workflow-fit claim. |
-| Beat 3 | **1.3 Supervised: "Every output is reviewed by a lawyer."** | Absolute human-review claim; must be true for every tool. |
-| Beat 3 | **1.4 Adaptable: "Amended as fast as the law moves."** | Speed-of-change claim. |
-| Beat 3 | **1.5 Ours: "Owned by us, improved by us, accountable to you."** | Ownership/accountability claim; check licensing of underlying models. |
-| Beat 4, 30–33s | **2.1 "Client data stays inside the Firm."** (redlined from "Data may be shared with third parties.") | The strongest data-residency claim in the film. |
+| Beat 3, 20.6–33s | **Bespoke: "Built around the matter in front of us."** | Claims tools are built per matter. |
+| Beat 3 | **Fitted: "Shaped to the way our teams already work."** | Workflow-fit claim. |
+| Beat 3 | **Supervised: "Every output is reviewed by a lawyer."** | Absolute human-review claim; must be true for every tool. |
+| Beat 3 | **Adaptable: "Amended as fast as the law moves."** | Speed-of-change claim. |
+| Beat 3 | **Ours: "Owned by us, improved by us, accountable to you."** | Ownership/accountability claim; check licensing of underlying models. |
+| Beat 3 | **The 35 matter names on the rewritten pages** (e.g. "Built for this hospital merger.") | Fictional and generic, but check none reads as a real client matter. |
 
 ## Run it
 
@@ -60,9 +60,9 @@ tools/                vendor, static server, Puppeteer export
 |---|---|---|---|
 | 1 | The buy reflex | 0–9 s | Macro on a boilerplate clause; pull out to a wall of identical contract pages. 5 s "Most firms are buying the same tools." |
 | 2 | The turn | 9–17 s | Gold cursor; the line is redlined (teal strike, tracked insertion "We chose to build our own."); accept change; 14 s title + gold hairline |
-| 3 | Terms of our own | 17–30 s | Our agreement drafts itself: "Built for the matter. Not the market." then clauses 1.1–1.5, one pillar each, with teal margin notes |
-| 4 | Inside the walls | 30–40 s | Data clause redlined; pull back; teal border drawn around the agreement, sealed in gold (35.85 s); a boilerplate page stops dead at the border; 36.9 s "Your information. Our walls." |
-| 5 | Executed | 40–45 s | The agreement falls away; the border becomes the lockup frame; 43 s "Built in-house. Built for law." |
+| 3 | The redline spreads | 17–33 s | The redline ripples across the whole wall; every identical page is rewritten for a different matter. The camera dives to five pages whose rewrite is a pillar. |
+| 4 | Inside the walls | 33–40 s | Pull back to the rewritten wall; teal border drawn around it, sealed in gold (35.85 s); a standard page stops dead at the border; 36.9 s "Your information. Our walls." |
+| 5 | Executed | 40–45 s | The pages fall away; the border becomes the lockup frame; 43 s "Built in-house. Built for law." |
 
 Sound cues: low pad 0–31 s · rise 31–35.85 s · low hit on the gold seal at 35.85 s · silence from 40 s.
 

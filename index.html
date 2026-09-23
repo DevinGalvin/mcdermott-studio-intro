@@ -88,35 +88,12 @@
   #rule { position: absolute; left: 50%; top: 640px; width: 520px; height: 2px; margin-left: -260px; background: var(--gold); transform: scaleX(0); }
 
 
-  /* ── Our own agreement (beats 3–4) ────────────────────────────────────── */
-  #own { position: absolute; left: 0; top: 0; width: 1920px; transform-origin: 0 0; opacity: 0; will-change: transform, opacity; }
-  #sheet {
-    position: absolute; left: 520px; top: 0; width: 1080px; box-sizing: border-box;
-    padding: 76px 96px 88px;
-    background: rgba(255, 255, 255, 0.045); border: 1px solid rgba(255, 255, 255, 0.13);
-    color: var(--white);
-  }
-  #sheet .shd {
-    font: 15px/1 Arial, Helvetica, sans-serif; letter-spacing: 0.3em; text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.6); display: flex; justify-content: space-between;
-    padding-bottom: 18px; margin-bottom: 52px; border-bottom: 1px solid rgba(255, 255, 255, 0.16);
-  }
-  #s-title { margin: 0 0 64px; font: 74px/1.08 Georgia, 'Times New Roman', serif; font-weight: normal; letter-spacing: -0.01em; }
-  .cl { display: flex; gap: 30px; margin: 0 0 42px; }
-  .cl .n { flex: none; width: 44px; padding-top: 16px; font: 16px/1 Arial, Helvetica, sans-serif; letter-spacing: 0.16em; color: rgba(255, 255, 255, 0.5); }
-  .cl p { margin: 0; font: 46px/1.24 Georgia, 'Times New Roman', serif; }
-  #sheet .sec {
-    margin: 70px 0 30px; font: 15px/1 Arial, Helvetica, sans-serif; letter-spacing: 0.3em;
-    text-transform: uppercase; color: rgba(255, 255, 255, 0.6); font-weight: normal;
-  }
-  #d-orig { position: relative; display: inline-block; color: rgba(255, 255, 255, 0.45); }
-  #d-strike { position: absolute; left: -3px; top: 54%; height: 3px; width: 0; background: var(--teal); }
-  #d-insrow { display: block; height: 58px; white-space: nowrap; }
-  #d-ins { color: var(--teal); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 10px; }
-  #d-caret { display: inline-block; width: 3px; height: 46px; margin-left: 5px; background: var(--gold); vertical-align: -8px; opacity: 0; }
-  .note { position: absolute; left: 150px; width: 300px; text-align: right; opacity: 0; }
-  .note span { font: 16px/1 Arial, Helvetica, sans-serif; letter-spacing: 0.32em; text-transform: uppercase; color: var(--teal); }
-  .note i { position: absolute; left: 318px; top: 8px; width: 52px; height: 1px; background: var(--teal); transform-origin: 0 50%; }
+  /* ── The redline spreads (beat 3) ─────────────────────────────────────── */
+  .page .fc { text-decoration-line: line-through; text-decoration-thickness: 1px; text-decoration-color: rgba(0, 226, 193, 0); }
+  .page .ins { display: none; margin-top: 3px; color: var(--teal); font-size: 10px; line-height: 1.4; }
+  .page .mt { display: none; color: var(--teal); }
+  .page .ins.pillar { font-size: 12.5px; line-height: 1.3; color: #fff; margin-top: 6px; }
+  .page .ins .pl { display: block; margin-bottom: 4px; font: 5.5px/1 Arial, Helvetica, sans-serif; letter-spacing: 0.3em; text-transform: uppercase; color: var(--teal); }
 
   /* ── The wall, the intruder, the close ────────────────────────────────── */
   .wall { position: absolute; background: var(--teal); }
@@ -188,24 +165,6 @@
       </div>
       <div id="title">McDermott Studio</div>
       <div id="rule"></div>
-      <div id="own">
-        <div id="sheet">
-          <div class="shd"><span>Schedule 1</span><span>Terms of our own</span></div>
-          <h2 id="s-title">Built for the matter.<br>Not the market.</h2>
-          <div class="cl"><span class="n">1.1</span><p>Built around the matter in front of us.</p></div>
-          <div class="cl"><span class="n">1.2</span><p>Shaped to the way our teams already work.</p></div>
-          <div class="cl"><span class="n">1.3</span><p>Every output is reviewed by a lawyer.</p></div>
-          <div class="cl"><span class="n">1.4</span><p>Amended as fast as the law moves.</p></div>
-          <div class="cl"><span class="n">1.5</span><p>Owned by us, improved by us, accountable to you.</p></div>
-          <h3 class="sec" id="dsec">2. Client information</h3>
-          <div class="cl" id="dcl"><span class="n">2.1</span><p><span id="d-orig">Data may be shared with third parties.<span id="d-strike"></span></span><span id="d-insrow"><span id="d-ins"></span><span id="d-caret"></span></span></p></div>
-        </div>
-        <div class="note"><span>Bespoke</span><i></i></div>
-        <div class="note"><span>Fitted</span><i></i></div>
-        <div class="note"><span>Supervised</span><i></i></div>
-        <div class="note"><span>Adaptable</span><i></i></div>
-        <div class="note"><span>Ours</span><i></i></div>
-      </div>
       <div id="walls"><div class="wall" id="w-t"></div><div class="wall" id="w-r"></div><div class="wall" id="w-b"></div><div class="wall" id="w-l"></div><div class="wall gold" id="w-g"></div></div>
       <div class="page" id="intruder"></div>
       <div class="line4" id="copy4">Your information. Our walls.</div>
