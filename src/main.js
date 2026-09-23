@@ -32,17 +32,17 @@ const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPrefer
 renderer.setPixelRatio(1);
 renderer.setSize(W * RS, H * RS, false);
 renderer.toneMapping = THREE.NeutralToneMapping; // keeps navy and teal on-brand; ACES shifts them
-renderer.toneMappingExposure = 1.0;
+renderer.toneMappingExposure = 1.25;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 const scene = new THREE.Scene();
-const BG = C.navy.clone().multiplyScalar(0.55);
+const BG = C.navy.clone().multiplyScalar(0.8);
 scene.background = BG;
 scene.fog = new THREE.FogExp2(BG.clone(), 0.006);
 scene.environment = buildEnvironment(renderer);
 
-const camera = new THREE.PerspectiveCamera(30, W / H, 1, 900);
+const camera = new THREE.PerspectiveCamera(30, W / H, 2, 1200);
 const post = buildPost(renderer, scene, camera, W * RS, H * RS);
 
 const city = buildCity(scene);
@@ -56,10 +56,10 @@ for (const b of BEATS) tl.addLabel(b.id, b.start);
 // Shot A, beats 1–2: descend over the city, then push toward the one tower that lights.
 const H3 = HERO_POS;
 const shotA = cameraMove([
-  { t: 0,  tx: 0,         ty: 0,  tz: 0,         r: 330, el: 60, az: 28, fov: 11 },
-  { t: 9,  tx: H3.x * .4, ty: 2,  tz: H3.z * .4, r: 285, el: 50, az: 34, fov: 11 },
-  { t: 13, tx: H3.x,      ty: 7,  tz: H3.z,      r: 205, el: 42, az: 38, fov: 12 },
-  { t: 17, tx: H3.x,      ty: 11, tz: H3.z,      r: 145, el: 37, az: 41, fov: 13 },
+  { t: 0,  tx: -4,        ty: 0,  tz: 4,         r: 430, el: 58, az: 8,  fov: 7 },
+  { t: 9,  tx: H3.x * .5, ty: 3,  tz: H3.z * .5, r: 315, el: 46, az: 38, fov: 7 },
+  { t: 12, tx: H3.x,      ty: 7,  tz: H3.z,      r: 250, el: 40, az: 44, fov: 7 },
+  { t: 17, tx: H3.x,      ty: 9,  tz: H3.z,      r: 185, el: 36, az: 50, fov: 7 },
 ]);
 tl.to(shotA, { u: 1, duration: 17, ease: 'none' }, 0);
 
@@ -90,15 +90,14 @@ function xyz(v) { return { x: v.x, y: v.y, z: v.z }; }
 
 // Post and atmosphere by beat.
 const P = post.state, fog = { d: 0.006 };
-tl.set(P, { aperture: 0.00018, bloom: 0.25, bloomThreshold: 0.9, bloomRadius: 0.4 }, 0);
+tl.set(P, { aperture: 0, bloom: 0, vignette: 0.32, ca: 0.0008 }, 0);
 tl.set(fog, { d: 0.0011 }, 0);
-tl.to(P, { bloom: 0.45, duration: 4, ease: 'sine.inOut' }, 9.5);
 tl.to(fog, { d: 0.0024, duration: 3, ease: 'sine.inOut' }, 9.0);
-tl.set(P, { aperture: 0.0014, bloom: 1.0, bloomThreshold: 0.62, bloomRadius: 0.55 }, 17);
+tl.set(P, { aperture: 0.0014, bloom: 0, vignette: 0.55 }, 17);
 tl.set(fog, { d: 0.02 }, 17);
-tl.to(P, { aperture: 0.00035, bloom: 0.9, duration: 3, ease: 'sine.inOut' }, 29.5);
+tl.to(P, { aperture: 0.00035, duration: 3, ease: 'sine.inOut' }, 29.5);
 tl.to(fog, { d: 0.009, duration: 4, ease: 'sine.inOut' }, 29.5);
-tl.to(P, { aperture: 0.00008, bloom: 1.15, duration: 2.5, ease: 'sine.inOut' }, 40);
+tl.to(P, { aperture: 0, duration: 2.5, ease: 'sine.inOut' }, 40);
 tl.to(fog, { d: 0.004, duration: 2.5, ease: 'sine.inOut' }, 40);
 
 city.timeline(tl);

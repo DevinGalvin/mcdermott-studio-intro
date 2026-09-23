@@ -104,7 +104,9 @@ export function buildPost(renderer, scene, camera, W, H) {
     bokeh.uniforms.focus.value = state.focus;
     bokeh.uniforms.aperture.value = state.aperture;
     bokeh.uniforms.maxblur.value = state.maxblur;
+    bokeh.enabled = state.aperture > 0;
     bloom.strength = state.bloom;
+    bloom.enabled = state.bloom > 0.001; // skip the pass entirely when glow is off
     bloom.radius = state.bloomRadius;
     bloom.threshold = state.bloomThreshold;
     const u = finish.uniforms;

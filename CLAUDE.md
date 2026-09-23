@@ -76,6 +76,13 @@ Navy #000042 (ground). Teal #00E2C1 (story). Gold #E5AC2E (accent, sparing). Whi
 
 Flag these in the README of the project so Marketing sees them.
 
+## Direction updates from the reviewer (these override the brief above)
+
+- **Look:** product render (Apple hardware intro). Solid glass and brushed metal under a soft studio key, real shadows. No wireframes or neon lines; teal only as light from inside things; bloom is a whisper.
+- **No glow.** Bloom stays in the pipeline at strength 0. Nothing glows, especially the logo and title moments. Light shows as color on surfaces, never a halo.
+- **Less 3D:** near-orthographic long lens, minimal depth of field, soft low-contrast shadows. Graphic, not deep.
+- **Pace and tone:** "too serious, too slow." Quicker, more confident moves and snappier mechanics; brighter overall, navy not black. Still no bounce or overshoot.
+
 ## Session log
 
 - Beat approvals and locks are recorded in README.md → Status. A locked beat is not touched without being asked.

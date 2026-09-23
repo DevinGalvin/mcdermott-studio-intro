@@ -336,10 +336,10 @@ export function buildInstruments() {
   group.add(pulses);
 
   // Beat 5: the ring of light.
-  const halo = new THREE.Mesh(new THREE.TorusGeometry(WALL_R, 0.035, 12, 256), emissiveMat(C.teal, 3.0));
+  const halo = new THREE.Mesh(new THREE.TorusGeometry(WALL_R, 0.05, 12, 256), emissiveMat(C.teal, 1.0));
   halo.rotation.x = Math.PI / 2; halo.position.y = 0.03;
   group.add(halo);
-  const goldPin = new THREE.Mesh(new THREE.SphereGeometry(0.1, 16, 12), emissiveMat(C.gold, 5));
+  const goldPin = new THREE.Mesh(new THREE.SphereGeometry(0.12, 16, 12), emissiveMat(C.gold, 1.0));
   goldPin.position.copy(seamP).setY(0.05);
   group.add(goldPin);
 

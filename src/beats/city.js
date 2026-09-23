@@ -46,7 +46,7 @@ export function buildCity(scene) {
 
   // Floor: black-navy lacquer. Receives the key's soft shadows.
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(420, 420), new THREE.MeshPhysicalMaterial({
-    color: '#020320', roughness: 0.42, metalness: 0, clearcoat: 0.6, clearcoatRoughness: 0.3, envMapIntensity: 0.3 }));
+    color: '#07093e', roughness: 0.42, metalness: 0, clearcoat: 0.6, clearcoatRoughness: 0.3, envMapIntensity: 0.3 }));
   floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true;
   group.add(floor);
 
@@ -89,14 +89,14 @@ export function buildCity(scene) {
   group.add(monos);
 
   // Key: one large soft cool light, high and to one side. Soft VSM shadows.
-  const key = new THREE.DirectionalLight('#fff8f0', 1.7);
+  const key = new THREE.DirectionalLight('#fff8f0', 2.1);
   key.position.set(-14, 90, 8); key.target.position.set(0, 0, 0);
   key.castShadow = true;
   key.shadow.mapSize.set(4096, 4096);
   Object.assign(key.shadow.camera, { left: -50, right: 50, top: 50, bottom: -50, near: 10, far: 200 });
   key.shadow.bias = -0.0004; key.shadow.normalBias = 0.03;
   group.add(key, key.target);
-  const fill = new THREE.HemisphereLight('#0b0f3a', '#000008', 0.4);
+  const fill = new THREE.HemisphereLight('#262e8a', '#050720', 1.3);
   group.add(fill);
 
   // Beat 2 interior: frosted floor plates that stack floor by floor, a core, the light.
@@ -111,7 +111,7 @@ export function buildCity(scene) {
     hero.add(p); plates.push(p);
   }
   const core = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 1, 20).translate(0, 0.5, 0),
-    new THREE.MeshBasicMaterial({ color: C.teal.clone().multiplyScalar(1.6) }));
+    new THREE.MeshBasicMaterial({ color: C.teal }));
   core.position.y = BASE; core.scale.y = 0.001; core.visible = false;
   hero.add(core);
   const tealLow = new THREE.PointLight(C.teal, 0, 5.5, 2); tealLow.position.set(0, 1.2, 0); hero.add(tealLow);
@@ -121,7 +121,7 @@ export function buildCity(scene) {
     map: softTexture(), color: C.teal, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending }));
   spill.position.y = 0.03; spill.userData.noDepth = true; hero.add(spill);
 
-  const gold = new THREE.Mesh(new THREE.SphereGeometry(0.1, 20, 14), new THREE.MeshBasicMaterial({ color: C.gold.clone().multiplyScalar(5) }));
+  const gold = new THREE.Mesh(new THREE.SphereGeometry(0.22, 24, 16), new THREE.MeshBasicMaterial({ color: C.gold }));
   const goldLight = new THREE.PointLight(C.gold, 0, 6, 2); gold.add(goldLight);
   gold.visible = false; hero.add(gold);
 
@@ -130,16 +130,16 @@ export function buildCity(scene) {
   function timeline(tl) {
     // Beat 1: row by row, the same slab lowers and locks. Mechanical, identical.
     drops.forEach((d) => {
-      const at = 0.6 + d.c.j * 0.44 + d.c.i * 0.03;
-      tl.to(d, { y: SEAT + 0.35, duration: 2.3, ease: 'sine.inOut' }, at);
-      tl.to(d, { y: SEAT, duration: 0.3, ease: 'power3.in' }, at + 2.3);
+      const at = 0.25 + d.c.j * 0.3 + d.c.i * 0.02;
+      tl.to(d, { y: SEAT + 0.25, duration: 1.15, ease: 'power2.inOut' }, at);
+      tl.to(d, { y: SEAT, duration: 0.14, ease: 'power2.in' }, at + 1.15);
     });
     // Beat 2: the studio light falls away; one vessel lights from within.
-    tl.to(S, { key: 0.06, duration: 3.0, ease: 'power2.inOut' }, 9.0);
-    tl.to(S, { ignite: 1, duration: 3.2, ease: 'power2.inOut' }, 9.5);
-    tl.to(S, { floors, duration: 5.6, ease: 'sine.inOut' }, 9.9);
-    tl.set(S, { goldOn: 1 }, 11.6);
-    tl.fromTo(S, { goldY: BASE + 0.2 }, { goldY: H + 0.6, duration: 5.0, ease: 'sine.inOut', immediateRender: false }, 11.6);
+    tl.to(S, { key: 0.16, duration: 1.8, ease: 'power2.inOut' }, 9.0);
+    tl.to(S, { ignite: 1, duration: 1.8, ease: 'power2.out' }, 9.2);
+    tl.to(S, { floors, duration: 3.8, ease: 'power1.inOut' }, 9.4);
+    tl.set(S, { goldOn: 1 }, 11.0);
+    tl.fromTo(S, { goldY: BASE + 0.2 }, { goldY: H + 0.6, duration: 4.0, ease: 'power1.inOut', immediateRender: false }, 11.0);
   }
 
   const m4 = new THREE.Matrix4();
@@ -147,18 +147,18 @@ export function buildCity(scene) {
     drops.forEach((d, k) => { m4.makeTranslation(d.c.x, d.y, d.c.z); monos.setMatrixAt(k, m4); });
     monos.instanceMatrix.needsUpdate = true;
 
-    key.intensity = 1.7 * S.key;
-    fill.intensity = 0.4 * S.key;
+    key.intensity = 2.1 * S.key;
+    fill.intensity = 1.3 * (0.4 + 0.6 * S.key);
     scene.environmentIntensity = 0.12 + 0.88 * S.key;
 
     tealLow.intensity = 240 * S.ignite;
-    spill.material.opacity = 0.16 * S.ignite;
+    spill.material.opacity = 0.07 * S.ignite;
     heroGlass.attenuationColor.set('#3b3e4c').lerp(C.teal, 0.35 * S.ignite);
     plates.forEach((p, f) => {
       const k = THREE.MathUtils.clamp(S.floors - f, 0, 1);
       p.visible = k > 0.001;
       p.material.opacity = k;
-      p.material.emissiveIntensity = 0.9 + 2.2 * (1 - k) * (k > 0 ? 1 : 0); // arrives bright, settles
+      p.material.emissiveIntensity = 0.55 + 0.6 * (1 - k) * (k > 0 ? 1 : 0); // arrives bright, settles
       p.scale.setScalar(0.94 + 0.06 * k);
     });
     const front = BASE + S.floors * fh;
