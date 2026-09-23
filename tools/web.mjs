@@ -29,6 +29,10 @@ while (queue.length) {
   const src = readFileSync(join(root, f), 'utf8');
   for (const m of src.matchAll(/(?:import|export)[^'"]*?from\s*['"]([^'"]+)['"]/g)) queue.push(resolve(m[1], f));
 }
-for (const f of seen) { mkdirSync(join(out, dirname(f)), { recursive: true }); cpSync(join(root, f), join(out, f)); }
+for (const f of seen) {
+  mkdirSync(join(out, dirname(f)), { recursive: true });
+  if (f.startsWith('src/')) writeFileSync(join(out, f), readFileSync(join(root, f), 'utf8').replaceAll('McDermott Studio', 'Studio Name'));
+  else cpSync(join(root, f), join(out, f));
+}
 writeFileSync(join(out, 'files.json'), JSON.stringify([...seen].sort()));
 console.log(seen.size, 'modules →', out);
